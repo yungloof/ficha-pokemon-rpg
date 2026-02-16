@@ -140,12 +140,21 @@
             <h2>Sessão</h2>
             <div id="sessao-nao-ativa" class="sessao-state">
               <button type="button" id="btn-criar-sessao" class="btn-primary">Criar Sessão</button>
+              <div class="sessao-entrar-wrap">
+                <span>ou</span>
+                <input type="text" id="sessao-codigo-input" placeholder="Código (ex: ABC123)" maxlength="10" />
+                <button type="button" id="btn-entrar-sessao" class="btn-ghost">Entrar em sessão</button>
+              </div>
               <p class="desc">Jogadores entram com o código nas fichas.</p>
             </div>
             <div id="sessao-ativa" class="sessao-state hidden">
               <div class="sessao-codigo-wrap">
                 <strong id="sessao-codigo">------</strong>
                 <button type="button" id="btn-copiar-codigo" class="btn-ghost btn-sm">Copiar</button>
+              </div>
+              <div id="sessao-jogadores-wrap" class="sessao-jogadores-wrap hidden">
+                <strong>Na sessão:</strong>
+                <ul id="sessao-jogadores" class="sessao-jogadores"></ul>
               </div>
               <button type="button" id="btn-encerrar-sessao" class="btn-ghost">Encerrar</button>
             </div>

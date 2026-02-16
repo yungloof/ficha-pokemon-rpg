@@ -422,6 +422,21 @@
   color: var(--primaria);
 }
 .mestre-sessao .desc { font-size: 0.9rem; color: var(--texto-muted); margin-top: 8px; }
+.sessao-entrar-wrap {
+  display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap;
+}
+.sessao-entrar-wrap span { color: var(--texto-muted); font-size: 0.9rem; }
+.sessao-entrar-wrap input {
+  width: 130px; padding: 8px 12px; border-radius: 8px; border: 2px solid var(--borda);
+  background: var(--fundo); color: var(--texto); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em;
+}
+.sessao-jogadores-wrap {
+  margin: 12px 0; padding: 12px; background: var(--fundo); border-radius: 8px; border: 1px solid var(--borda);
+}
+.sessao-jogadores-wrap strong { font-size: 0.9rem; display: block; margin-bottom: 8px; color: var(--texto-muted); }
+.sessao-jogadores { list-style: none; margin: 0; padding: 0; font-size: 0.9rem; }
+.sessao-jogadores li { padding: 4px 0; }
+.sessao-jogadores .texto-muted { color: var(--texto-muted); font-style: italic; }
 
 /* Guia */
 .guia-accordion { display: flex; flex-direction: column; gap: 8px; }

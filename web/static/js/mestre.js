@@ -94,28 +94,65 @@
       });
     });
 
-    // Sessão
+    const MESTRE_SESSAO_KEY = "mestre_sessao_codigo";
+
+    function setSessaoAtiva(cod) {
+      sessaoCodigo = cod;
+      if (cod) localStorage.setItem(MESTRE_SESSAO_KEY, cod);
+      $("sessao-codigo").textContent = cod || "------";
+      $("sessao-nao-ativa").classList.add("hidden");
+      $("sessao-ativa").classList.remove("hidden");
+      iniciarPoll();
+      buscarJogadores();
+    }
+    async function verificarSessaoExiste(cod) {
+      const res = await fetch(`/api/mestre/session/${encodeURIComponent(cod)}/jogadores`, CREDS);
+      return res.ok;
+    }
     async function criarSessao() {
       const res = await fetch("/api/mestre/session/create", { method: "POST", ...CREDS });
       const json = await res.json();
       if (!json.ok) return;
-      sessaoCodigo = json.codigo;
-      $("sessao-codigo").textContent = sessaoCodigo;
-      $("sessao-nao-ativa").classList.add("hidden");
-      $("sessao-ativa").classList.remove("hidden");
-      iniciarPoll();
+      setSessaoAtiva(json.codigo);
+    }
+    async function entrarSessao() {
+      const inp = $("sessao-codigo-input");
+      const cod = (inp?.value || "").trim().toUpperCase();
+      if (!cod) return;
+      const existe = await verificarSessaoExiste(cod);
+      if (!existe) { alert("Sessão não encontrada. O servidor pode ter reiniciado."); return; }
+      setSessaoAtiva(cod);
+      inp.value = "";
     }
     function encerrarSessao() {
       sessaoCodigo = null;
+      localStorage.removeItem(MESTRE_SESSAO_KEY);
       if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
       $("sessao-nao-ativa").classList.remove("hidden");
       $("sessao-ativa").classList.add("hidden");
+      $("sessao-jogadores-wrap")?.classList.add("hidden");
+      $("sessao-jogadores").innerHTML = "";
       $("rolls-empty")?.classList.remove("hidden");
       $("rolls-list")?.classList.add("hidden");
       $("rolls-list").innerHTML = "";
     }
+    async function buscarJogadores() {
+      if (!sessaoCodigo) return;
+      const res = await fetch(`/api/mestre/session/${sessaoCodigo}/jogadores`, CREDS);
+      const json = await res.json();
+      if (!json.ok) return;
+      const ul = $("sessao-jogadores");
+      const wrap = $("sessao-jogadores-wrap");
+      if (!ul || !wrap) return;
+      const jogadores = json.jogadores || [];
+      wrap.classList.remove("hidden");
+      ul.innerHTML = jogadores.length > 0
+        ? jogadores.map(j => `<li>${escapeHtml(j.nome)}</li>`).join("")
+        : "<li class=\"texto-muted\">Ninguém na sessão ainda</li>";
+    }
     async function buscarRolls() {
       if (!sessaoCodigo) return;
+      buscarJogadores();
       const total = $("rolls-list")?.dataset?.total || 0;
       const res = await fetch(`/api/mestre/session/${sessaoCodigo}/rolls?desde=${total}`, CREDS);
       const json = await res.json();
@@ -137,6 +174,8 @@
       pollInterval = setInterval(buscarRolls, 2000);
     }
     $("btn-criar-sessao")?.addEventListener("click", criarSessao);
+    $("btn-entrar-sessao")?.addEventListener("click", entrarSessao);
+    $("sessao-codigo-input")?.addEventListener("keydown", (e) => { if (e.key === "Enter") entrarSessao(); });
     $("btn-encerrar-sessao")?.addEventListener("click", encerrarSessao);
     $("btn-copiar-codigo")?.addEventListener("click", () => {
       if (!sessaoCodigo) return;
@@ -146,6 +185,15 @@
         setTimeout(() => btn.textContent = "Copiar", 1500);
       });
     });
+
+    // Restaurar sessão salva (após refresh ou novo login)
+    (async function restaurarSessao() {
+      const cod = localStorage.getItem(MESTRE_SESSAO_KEY);
+      if (!cod) return;
+      const existe = await verificarSessaoExiste(cod);
+      if (existe) setSessaoAtiva(cod);
+      else localStorage.removeItem(MESTRE_SESSAO_KEY);
+    })();
 
     // Clima
     async function rolarClima() {
