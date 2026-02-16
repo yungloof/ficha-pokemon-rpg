@@ -1398,8 +1398,28 @@
     sessaoJogador = localStorage.getItem("ficha_sessao_jogador") || null;
     const modal = $("modal-sessao");
     const btnSessao = $("btn-sessao");
+    const btnSessaoSair = $("btn-sessao-sair");
     const btnEntrar = $("sessao-entrar");
     const btnSair = $("sessao-sair");
+
+    function updateSessaoUI() {
+      if (sessaoCodigo) {
+        if (btnSessao) btnSessao.textContent = "📡 Sessão ✓";
+        btnSessaoSair?.classList.remove("hidden");
+      } else {
+        if (btnSessao) btnSessao.textContent = "📡 Sessão";
+        btnSessaoSair?.classList.add("hidden");
+      }
+    }
+    function sairSessao() {
+      sessaoCodigo = null;
+      sessaoJogador = null;
+      localStorage.removeItem("ficha_sessao_codigo");
+      localStorage.removeItem("ficha_sessao_jogador");
+      modal?.classList.add("hidden");
+      updateSessaoUI();
+    }
+
     if (!modal || !btnSessao) return;
     btnSessao.onclick = () => {
       if (sessaoCodigo) {
@@ -1431,17 +1451,11 @@
         });
       } catch (e) { /* ignora */ }
       modal.classList.add("hidden");
-      if (btnSessao) btnSessao.textContent = "📡 Sessão ✓";
+      updateSessaoUI();
     });
-    btnSair?.addEventListener("click", () => {
-      sessaoCodigo = null;
-      sessaoJogador = null;
-      localStorage.removeItem("ficha_sessao_codigo");
-      localStorage.removeItem("ficha_sessao_jogador");
-      modal.classList.add("hidden");
-      if (btnSessao) btnSessao.textContent = "📡 Sessão";
-    });
-    if (sessaoCodigo && btnSessao) btnSessao.textContent = "📡 Sessão ✓";
+    btnSair?.addEventListener("click", sairSessao);
+    btnSessaoSair?.addEventListener("click", sairSessao);
+    updateSessaoUI();
   })();
 
   (function initTheme() {

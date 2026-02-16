@@ -318,6 +318,15 @@ body {
   flex-wrap: wrap;
 }
 
+.export-import .sessao-wrap {
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.export-import .btn-sessao-sair {
+  padding: 6px 12px; font-size: 0.85rem; color: var(--texto-muted);
+  background: transparent; border: 1px solid var(--borda); border-radius: 8px;
+  cursor: pointer;
+}
+.export-import .btn-sessao-sair:hover { color: var(--danger); border-color: var(--danger); }
 .export-import .btn-mestre {
   color: var(--acento);
   text-decoration: none;

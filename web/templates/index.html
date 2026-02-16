@@ -38,7 +38,10 @@
         </label>
         <div class="export-import">
           <a href="/mestre" class="btn-mestre" title="Abrir painel do Mestre">🎮 Mestre</a>
-          <button type="button" id="btn-sessao" title="Entrar em sessão do Mestre">📡 Sessão</button>
+          <span class="sessao-wrap">
+            <button type="button" id="btn-sessao" title="Entrar em sessão do Mestre">📡 Sessão</button>
+            <button type="button" id="btn-sessao-sair" class="btn-sessao-sair hidden" title="Sair da sessão">Sair</button>
+          </span>
           <button type="button" id="btn-export" title="Exportar ficha como JSON">📤 Exportar</button>
           <button type="button" id="btn-import" title="Importar ficha (compatível com versão Flet)">📥 Importar</button>
           <input type="file" id="input-import" accept=".json" hidden />
