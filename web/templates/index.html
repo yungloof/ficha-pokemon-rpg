@@ -39,8 +39,8 @@
         <div class="export-import">
           <a href="/mestre" class="btn-mestre" title="Abrir painel do Mestre">🎮 Mestre</a>
           <span class="sessao-wrap">
+            <button type="button" id="btn-sessao-sair" class="btn-sessao-sair hidden" title="Sair da sessão">✕ Sair da sessão</button>
             <button type="button" id="btn-sessao" title="Entrar em sessão do Mestre">📡 Sessão</button>
-            <button type="button" id="btn-sessao-sair" class="btn-sessao-sair hidden" title="Sair da sessão">Sair</button>
           </span>
           <button type="button" id="btn-export" title="Exportar ficha como JSON">📤 Exportar</button>
           <button type="button" id="btn-import" title="Importar ficha (compatível com versão Flet)">📥 Importar</button>
@@ -58,6 +58,7 @@
         <label>Seu nome (Treinador)</label>
         <input type="text" id="sessao-jogador" placeholder="Nome do Treinador" />
         <div class="modal-actions">
+          <button type="button" id="sessao-cancelar" class="btn-ghost">Cancelar</button>
           <button type="button" id="sessao-sair" class="btn-secondary hidden">Sair da Sessão</button>
           <button type="button" id="sessao-entrar" class="primary">Entrar</button>
         </div>

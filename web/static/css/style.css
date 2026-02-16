@@ -319,13 +319,14 @@ body {
 }
 
 .export-import .sessao-wrap {
-  display: inline-flex; align-items: center; gap: 6px;
+  display: inline-flex; align-items: center; gap: 8px;
 }
 .export-import .btn-sessao-sair {
-  padding: 6px 12px; font-size: 0.85rem; color: var(--texto-muted);
+  padding: 8px 14px; font-size: 0.9rem; color: var(--texto-muted);
   background: transparent; border: 1px solid var(--borda); border-radius: 8px;
-  cursor: pointer;
+  cursor: pointer; flex-shrink: 0;
 }
+.export-import .btn-sessao-sair:not(.hidden) { display: inline-block !important; }
 .export-import .btn-sessao-sair:hover { color: var(--danger); border-color: var(--danger); }
 .export-import .btn-mestre {
   color: var(--acento);
@@ -1377,6 +1378,16 @@ body {
 .modal-actions .primary {
   background: var(--gradient-prim);
   color: #000;
+}
+
+.modal-actions .btn-ghost {
+  background: transparent;
+  color: var(--texto-muted);
+  border: 1px solid var(--borda);
+}
+.modal-actions .btn-ghost:hover {
+  color: var(--texto);
+  border-color: var(--texto-muted);
 }
 
 .edit-poke-grid {

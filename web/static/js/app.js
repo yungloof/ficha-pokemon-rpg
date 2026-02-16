@@ -1401,6 +1401,11 @@
     const btnSessaoSair = $("btn-sessao-sair");
     const btnEntrar = $("sessao-entrar");
     const btnSair = $("sessao-sair");
+    const btnCancelar = $("sessao-cancelar");
+
+    function fecharModal() {
+      modal?.classList.add("hidden");
+    }
 
     function updateSessaoUI() {
       if (sessaoCodigo) {
@@ -1453,6 +1458,7 @@
       modal.classList.add("hidden");
       updateSessaoUI();
     });
+    btnCancelar?.addEventListener("click", fecharModal);
     btnSair?.addEventListener("click", sairSessao);
     btnSessaoSair?.addEventListener("click", sairSessao);
     updateSessaoUI();
