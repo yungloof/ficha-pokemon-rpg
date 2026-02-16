@@ -20,6 +20,14 @@
   let historicoRolagens = [];
   let editingPokeIndex = -1;
   let pokedexCache = null; // Cache do Pokédex para autocomplete
+  const POKE_SPRITE_URL = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon";
+
+  function getPokeSpriteIndex(nome) {
+    if (!pokedexCache || !nome) return null;
+    const n = (nome || "").trim();
+    const entry = Object.entries(pokedexCache).find(([k]) => k.toLowerCase() === n.toLowerCase());
+    return entry ? entry[1]?.index : null;
+  }
 
   function getStatsDefault() {
     return {
@@ -799,27 +807,31 @@
       const pct = mx > 0 ? Math.min(1, cur / mx) : 0;
       const bonus = getBonusTipoPokemon(p.tipo);
       const tipoBadges = tiposArr.map(t => `<span class="tipo-badge" style="background:${cores[t] || '#888'}">${escapeHtml(t)}</span>`).join(" ");
+      const spriteIndex = getPokeSpriteIndex(p.nome);
 
       const acStr = p.ac != null && p.ac !== "" ? ` | AC ${p.ac}` : "";
       return `
         <div class="poke-card" style="border-left-color: ${cor}" data-poke-idx="${i}">
           <div class="poke-header">
-            <div>
-              <span class="poke-slot">#${i + 1}</span>
-              <span class="poke-nome">${escapeHtml(p.nome || "?")}</span>
-              <div class="poke-meta">
-                Nv.${p.nivel} | SR ${p.sr}${acStr}
-                <span class="poke-tipos">${tipoBadges}</span>
+            <div class="poke-header-left">
+              ${spriteIndex != null ? `<img class="poke-sprite" src="${POKE_SPRITE_URL}/${spriteIndex}.png" alt="" />` : ""}
+              <div>
+                <span class="poke-slot">#${i + 1}</span>
+                <span class="poke-nome">${escapeHtml(p.nome || "?")}</span>
+                <div class="poke-meta">
+                  Nv.${p.nivel} | SR ${p.sr}${acStr}
+                  <span class="poke-tipos">${tipoBadges}</span>
+                </div>
               </div>
             </div>
             <div class="poke-actions">
-              <button type="button" data-roll-poke="${i}" title="Rolar teste">🎲</button>
-              <button type="button" data-edit-poke="${i}" title="Editar">✏️</button>
-              <button type="button" data-del-poke="${i}" title="Remover">🗑️</button>
+              <button type="button" data-roll-poke="${i}" title="Rolar teste" class="icon-btn">Rolar</button>
+              <button type="button" data-edit-poke="${i}" title="Editar" class="icon-btn">Editar</button>
+              <button type="button" data-del-poke="${i}" title="Remover" class="icon-btn icon-del">Remover</button>
             </div>
           </div>
           <div class="poke-lealdade">${leal.emoji || ""} ${leal.nome || "Neutro"}</div>
-          <div class="poke-hp-line">❤️ ${cur}/${mx} HP ${bonus ? `(+${bonus})` : ""}</div>
+          <div class="poke-hp-line"><span class="hp-heart"></span> ${cur}/${mx} HP ${bonus ? `(+${bonus})` : ""}</div>
           <div class="hp-bar"><div class="hp-fill" style="width:${pct * 100}%;background:${cor}"></div></div>
           <div class="poke-hp-ctrl">
             <button type="button" class="btn-sm btn-hp" data-poke-hp="${i}" data-delta="-1">−</button>
@@ -1035,7 +1047,9 @@
       const hp = dados.hp != null ? dados.hp : "";
       const ac = dados.ac != null ? dados.ac : "";
       const extra = [ac ? `AC ${ac}` : "", hp ? `HP ${hp}` : ""].filter(Boolean).join(" | ");
-      return `<li data-nome="${escapeHtml(nome)}" data-sr="${dados.sr}" data-tipo="${escapeHtml(tipos)}" data-hp="${hp}" data-ac="${ac}">${escapeHtml(nome)} — SR ${dados.sr} (${escapeHtml(tipos)})${extra ? " · " + extra : ""}</li>`;
+      const idx = dados.index;
+      const img = idx != null ? `<img class="pokedex-suggest-sprite" src="${POKE_SPRITE_URL}/${idx}.png" alt="" />` : "";
+      return `<li data-nome="${escapeHtml(nome)}" data-sr="${dados.sr}" data-tipo="${escapeHtml(tipos)}" data-hp="${hp}" data-ac="${ac}">${img}<span>${escapeHtml(nome)} — SR ${dados.sr} (${escapeHtml(tipos)})${extra ? " · " + extra : ""}</span></li>`;
     }).join("");
     ul.classList.remove("hidden");
     ul.querySelectorAll("li").forEach(li => {
@@ -1067,7 +1081,7 @@
     renderPokemons();
     atualizar();
     saveToStorage();
-    showToast("✓ " + nome + " adicionado", true);
+    showToast(nome + " adicionado", true);
   }
 
   async function addPoke() {
@@ -1099,7 +1113,7 @@
     renderPokemons();
     atualizar();
     saveToStorage();
-    showToast("✓ " + nome + " adicionado", true);
+    showToast(nome + " adicionado", true);
   }
 
   function saveToStorage() {
@@ -1135,7 +1149,7 @@
     a.download = `ficha_${(stats.nome || "treinador").replace(/\s/g, "_")}.json`;
     a.click();
     URL.revokeObjectURL(a.href);
-    showToast("✅ Ficha exportada!");
+    showToast("Ficha exportada!");
   }
 
   async function importFicha() {
@@ -1168,9 +1182,9 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...stats, _user_id: getOrCreateUserId() })
         }).catch(() => {});
-        showToast("✅ Ficha importada com sucesso!");
+        showToast("Ficha importada com sucesso!");
       } catch (err) {
-        showToast("❌ " + (err.message || "Erro ao importar"), false);
+        showToast(err.message || "Erro ao importar", false);
       }
       inp.value = "";
     };
@@ -1190,6 +1204,7 @@
   }
 
   async function init() {
+    loadPokedex().then(() => renderPokemons()); // Sprites da equipe quando pokedex carregar
     const res = await fetch("/api/constants");
     C = await res.json();
 
@@ -1409,10 +1424,10 @@
 
     function updateSessaoUI() {
       if (sessaoCodigo) {
-        if (btnSessao) btnSessao.textContent = "📡 Sessão ✓";
+        if (btnSessao) btnSessao.textContent = "Sessão ✓";
         btnSessaoSair?.classList.remove("hidden");
       } else {
-        if (btnSessao) btnSessao.textContent = "📡 Sessão";
+        if (btnSessao) btnSessao.textContent = "Sessão";
         btnSessaoSair?.classList.add("hidden");
       }
     }
@@ -1466,17 +1481,32 @@
 
   (function initTheme() {
     const VALID_THEMES = ["bulbasaur","pikachu","charmander","squirtle","gastly","mew","umbreon","gengar","pokebola"];
+    const THEME_SPRITE = { bulbasaur:1, pikachu:25, charmander:4, squirtle:7, gastly:92, mew:151, umbreon:197, gengar:94, pokebola:0 };
     const saved = localStorage.getItem("ficha_pokemon_theme");
     const theme = VALID_THEMES.includes(saved) ? saved : "bulbasaur";
     document.body.setAttribute("data-theme", theme);
     const sel = $("theme-select");
+    const sprEl = $("theme-sprite");
+    function updateThemeSprite(t) {
+      if (!sprEl) return;
+      const idx = THEME_SPRITE[t];
+      if (idx && idx > 0) {
+        sprEl.src = `${POKE_SPRITE_URL}/${idx}.png`;
+        sprEl.style.display = "";
+      } else {
+        sprEl.src = "";
+        sprEl.style.display = "none";
+      }
+    }
     if (sel) {
       sel.value = theme;
+      updateThemeSprite(theme);
       sel.onchange = () => {
         const t = sel.value;
         if (VALID_THEMES.includes(t)) {
           document.body.setAttribute("data-theme", t);
           localStorage.setItem("ficha_pokemon_theme", t);
+          updateThemeSprite(t);
         }
       };
     }

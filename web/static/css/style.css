@@ -292,6 +292,14 @@ body {
   color: var(--texto-muted);
 }
 
+.theme-sprite {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+}
+
 .theme-selector-wrap select,
 #theme-select {
   padding: 6px 10px;
@@ -624,6 +632,17 @@ body {
   filter: drop-shadow(0 0 6px rgba(255,59,48,0.4));
 }
 
+.hp-heart {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+  background: var(--danger, #e53935);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E") center/contain no-repeat;
+  vertical-align: middle;
+}
+
 .hp-title {
   font-weight: 800;
   font-size: 1rem;
@@ -954,6 +973,21 @@ body {
   margin-bottom: 10px;
 }
 
+.poke-card .poke-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.poke-card .poke-sprite {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+}
+
 .poke-card .poke-nome {
   font-weight: 700;
   font-size: 1.15rem;
@@ -993,6 +1027,11 @@ body {
 .poke-card .poke-actions button:hover {
   border-color: var(--primaria);
   color: var(--primaria);
+}
+
+.poke-card .poke-actions .icon-del:hover {
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 .poke-card .poke-hp-ctrl {
@@ -1084,10 +1123,22 @@ body {
 }
 
 .pokedex-suggestions li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 10px 14px;
   cursor: pointer;
   font-size: 0.95rem;
   transition: background 0.1s;
+}
+
+.pokedex-suggest-sprite {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
 }
 
 .pokedex-suggestions li:hover {

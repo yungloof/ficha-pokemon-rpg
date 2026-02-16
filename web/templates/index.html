@@ -23,27 +23,28 @@
       </div>
       <div class="header-actions">
         <label class="theme-selector-wrap">
+          <img id="theme-sprite" class="theme-sprite" src="" alt="" />
           <span class="theme-label">Tema</span>
           <select id="theme-select" title="Escolha um tema Pokémon">
-            <option value="bulbasaur">🌿 Bulbasaur</option>
-            <option value="pikachu">⚡ Pikachu</option>
-            <option value="charmander">🔥 Charmander</option>
-            <option value="squirtle">💧 Squirtle</option>
-            <option value="gastly">👻 Gastly</option>
-            <option value="mew">✨ Mew</option>
-            <option value="umbreon">🌙 Umbreon</option>
-            <option value="gengar">😈 Gengar</option>
-            <option value="pokebola">🔴 Pokébola</option>
+            <option value="bulbasaur">Bulbasaur</option>
+            <option value="pikachu">Pikachu</option>
+            <option value="charmander">Charmander</option>
+            <option value="squirtle">Squirtle</option>
+            <option value="gastly">Gastly</option>
+            <option value="mew">Mew</option>
+            <option value="umbreon">Umbreon</option>
+            <option value="gengar">Gengar</option>
+            <option value="pokebola">Pokébola</option>
           </select>
         </label>
         <div class="export-import">
-          <a href="/mestre" class="btn-mestre" title="Abrir painel do Mestre">🎮 Mestre</a>
+          <a href="/mestre" class="btn-mestre" title="Abrir painel do Mestre">Mestre</a>
           <span class="sessao-wrap">
             <button type="button" id="btn-sessao-sair" class="btn-sessao-sair hidden" title="Sair da sessão">✕ Sair da sessão</button>
-            <button type="button" id="btn-sessao" title="Entrar em sessão do Mestre">📡 Sessão</button>
+            <button type="button" id="btn-sessao" title="Entrar em sessão do Mestre">Sessão</button>
           </span>
-          <button type="button" id="btn-export" title="Exportar ficha como JSON">📤 Exportar</button>
-          <button type="button" id="btn-import" title="Importar ficha (compatível com versão Flet)">📥 Importar</button>
+          <button type="button" id="btn-export" title="Exportar ficha como JSON">Exportar</button>
+          <button type="button" id="btn-import" title="Importar ficha (compatível com versão Flet)">Importar</button>
           <input type="file" id="input-import" accept=".json" hidden />
         </div>
       </div>
@@ -51,7 +52,7 @@
 
     <div id="modal-sessao" class="modal hidden">
       <div class="modal-content modal-sessao">
-        <h3>📡 Entrar em Sessão</h3>
+        <h3>Entrar em Sessão</h3>
         <p class="desc">Digite o código que o Mestre forneceu. Suas rolagens serão visíveis para ele.</p>
         <label>Código</label>
         <input type="text" id="sessao-codigo" placeholder="Ex: ABC123" maxlength="10" />
@@ -66,24 +67,24 @@
     </div>
 
     <nav class="nav-tabs">
-      <button class="tab active" data-tab="treinador">🏅 Treinador</button>
-      <button class="tab" data-tab="pericias">🎯 Perícias</button>
-      <button class="tab" data-tab="mochila">🎒 Mochila</button>
-      <button class="tab" data-tab="equipe">🐾 Equipe</button>
-      <button class="tab" data-tab="regras">📖 Regras</button>
+      <button class="tab active" data-tab="treinador">Treinador</button>
+      <button class="tab" data-tab="pericias">Perícias</button>
+      <button class="tab" data-tab="mochila">Mochila</button>
+      <button class="tab" data-tab="equipe">Equipe</button>
+      <button class="tab" data-tab="regras">Regras</button>
     </nav>
 
     <main class="content">
       <section id="panel-treinador" class="panel active">
         <div class="card-group">
           <div class="card">
-            <h3>🌍 Região de Origem</h3>
+            <h3>Região de Origem</h3>
             <select id="regiao"></select>
             <p id="regiao-desc" class="desc"></p>
             <p id="regiao-hab" class="hab"></p>
           </div>
           <div class="card">
-            <h3>📜 Origem de Jornada</h3>
+            <h3>Origem de Jornada</h3>
             <select id="origem_jornada"></select>
             <p id="origem-desc" class="desc"></p>
             <p id="origem-hab" class="hab"></p>
@@ -94,7 +95,7 @@
             </div>
           </div>
           <div class="card">
-            <h3>⭐ Especialização</h3>
+            <h3>Especialização</h3>
             <label>1ª (Nv 1)</label>
             <select id="especializacao"></select>
             <div id="container-espec-2" class="espec-extra hidden">
@@ -116,7 +117,7 @@
             </div>
           </div>
           <div class="card">
-            <h3>🎓 Classe (Nv.2+)</h3>
+            <h3>Classe (Nv.2+)</h3>
             <select id="classe"></select>
             <p id="classe-desc" class="desc"></p>
             <div id="classe-hab" class="hab classe-habilidades"></div>
@@ -124,7 +125,7 @@
         </div>
 
           <div class="card combate">
-          <h3>⚡ Combate</h3>
+          <h3>Combate</h3>
           <div class="combate-grid">
             <div class="stat-box">
               <span>CA</span>
@@ -133,7 +134,7 @@
             <div class="stat-box">
               <span>INIC.</span>
               <strong id="inic">+0</strong>
-              <button type="button" class="btn-roll" id="roll-inic" title="Rolar iniciativa">🎲</button>
+              <button type="button" class="btn-roll" id="roll-inic" title="Rolar iniciativa">Rolar</button>
             </div>
             <div class="stat-box">
               <span>DESL.</span>
@@ -144,7 +145,7 @@
           <div class="hp-manager">
             <div class="hp-row">
               <div class="hp-label-wrap">
-                <span class="hp-icon">❤️</span>
+                <span class="hp-icon hp-heart"></span>
                 <span class="hp-title">PV</span>
               </div>
               <div class="hp-values">
@@ -163,12 +164,12 @@
             </div>
           </div>
           <div class="saves">
-            <h4>🛡️ Testes de Resistência</h4>
+            <h4>Testes de Resistência</h4>
             <div id="saves-grid"></div>
             <p id="resultado-save" class="resultado"></p>
           </div>
           <div class="roller">
-            <h4>🎲 Roller</h4>
+            <h4>Roller</h4>
             <select id="roller-dado"><option value="d20">d20</option><option value="d12">d12</option><option value="d10">d10</option><option value="d8">d8</option><option value="d6">d6</option><option value="d4">d4</option></select>
             <span>+</span>
             <input type="number" id="roller-mod" value="0" placeholder="Mod" />
@@ -176,19 +177,19 @@
             <span id="roller-result"></span>
           </div>
           <div class="historico">
-            <h4>📜 Histórico</h4>
+            <h4>Histórico</h4>
             <div id="historico-list"></div>
           </div>
         </div>
 
         <div class="card atributos">
-          <h3>💪 Atributos</h3>
+          <h3>Atributos</h3>
           <div id="point-buy-status"></div>
           <div id="atributos-grid"></div>
         </div>
 
         <div class="card talentos-card">
-          <h3>✨ Talentos</h3>
+          <h3>Talentos</h3>
           <div class="talentos-add-row">
             <select id="talento-select"></select>
             <button type="button" id="talento-add-btn">+ Adicionar</button>
@@ -200,7 +201,7 @@
 
       <section id="panel-pericias" class="panel">
         <div class="card">
-          <h3>🎯 Perícias</h3>
+          <h3>Perícias</h3>
           <p id="pericias-auto" class="auto"></p>
           <p id="resultado-pericia" class="resultado"></p>
           <div id="pericias-grid"></div>
@@ -210,13 +211,13 @@
       <section id="panel-mochila" class="panel panel-mochila">
         <div class="mochila-grid">
         <div class="card">
-          <h3>💰 Pokédollars</h3>
+          <h3>Pokédollars</h3>
           <input type="text" id="pokedollars" />
-          <button type="button" id="roll-dinheiro">🎲 Rolar Dinheiro Inicial</button>
+          <button type="button" id="roll-dinheiro">Rolar Dinheiro Inicial</button>
           <p id="resultado-dinheiro" class="resultado"></p>
         </div>
         <div class="card">
-          <h3>🎒 Mochila</h3>
+          <h3>Mochila</h3>
           <label>Pokébolas</label>
           <input type="text" id="pokebolas" />
           <label>Itens Chave</label>
@@ -233,7 +234,7 @@
       <section id="panel-equipe" class="panel">
         <div class="card equipe-card">
           <div class="equipe-header">
-            <h3>⚔️ Equipe Pokémon</h3>
+            <h3>Equipe Pokémon</h3>
             <span class="equipe-slots" id="equipe-slots">0/6</span>
           </div>
           <div class="add-poke-wrap">
@@ -266,7 +267,7 @@
           </div>
         </div>
         <div class="card calc-captura">
-          <h3>🎯 Calculadora de Captura</h3>
+          <h3>Calculadora de Captura</h3>
           <p class="desc">CD = 10 + SR base (arred. ↓) + nível + vida restante ÷ 10 (arred. ↓). A Pokébola adiciona bônus à <em>rolagem</em>.</p>
           <div class="calc-captura-grid">
             <label>Nível do Pokémon</label>
@@ -328,14 +329,14 @@
               <strong class="calc-cd-val calc-bonus-val" id="calc-bonus-val">—</strong>
             </div>
           </div>
-          <p class="calc-vantagem" id="calc-vantagem-dica">💡 Vantagem se: envenenado, queimando, paralisado, congelado, dormindo, confuso ou impedido. Rolagem = d20 + mod Adestrar Animais + prof + bônus Pokébola.</p>
+          <p class="calc-vantagem" id="calc-vantagem-dica">Vantagem se: envenenado, queimando, paralisado, congelado, dormindo, confuso ou impedido. Rolagem = d20 + mod Adestrar Animais + prof + bônus Pokébola.</p>
         </div>
         <div class="card resumo">
-          <h3>📋 Resumo de Combate</h3>
+          <h3>Resumo de Combate</h3>
           <div id="regras-resumo" class="markdown"></div>
         </div>
         <div class="card regras-full">
-          <h3>📖 Guia Completo</h3>
+          <h3>Guia Completo</h3>
           <div id="regras-texto" class="markdown"></div>
         </div>
       </section>
@@ -344,7 +345,7 @@
 
   <div id="modal-editar-poke" class="modal hidden">
     <div class="modal-content modal-editar-poke">
-      <h3>✏️ Editar Pokémon</h3>
+      <h3>Editar Pokémon</h3>
       <div class="edit-poke-grid">
         <div>
           <label>Nome</label>
