@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mestre – RPG Pokémon</title>
+  <meta name="theme-color" content="#0D1117">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/mestre.css">
+</head>
+<body>
+  <div id="app" class="mestre-app">
+    <header class="header mestre-header">
+      <div class="header-top">
+        <h1 class="mestre-title">🎮 Mesa do Mestre</h1>
+        <a href="/" class="link-player">← Voltar ao Player</a>
+      </div>
+    </header>
+
+    <main class="mestre-main">
+      <!-- Sessão -->
+      <section class="card mestre-sessao">
+        <h2>📡 Sessão</h2>
+        <div id="sessao-nao-ativa" class="sessao-state">
+          <button type="button" id="btn-criar-sessao" class="btn-primary">Criar Sessão</button>
+          <p class="desc">Jogadores entram com o código em suas fichas (entrar em sessão).</p>
+        </div>
+        <div id="sessao-ativa" class="sessao-state hidden">
+          <div class="sessao-codigo-wrap">
+            <span class="sessao-label">Código da sessão:</span>
+            <strong class="sessao-codigo" id="sessao-codigo">------</strong>
+            <button type="button" id="btn-copiar-codigo" class="btn-small">Copiar</button>
+          </div>
+          <button type="button" id="btn-encerrar-sessao" class="btn-secondary">Encerrar Sessão</button>
+        </div>
+      </section>
+
+      <!-- Rolagens dos jogadores -->
+      <section class="card mestre-rolls">
+        <h2>🎲 Rolagens dos Jogadores</h2>
+        <div id="rolls-empty" class="rolls-empty">Nenhuma rolagem ainda.</div>
+        <ul id="rolls-list" class="rolls-list hidden"></ul>
+      </section>
+
+      <!-- Ferramentas rápidas -->
+      <section class="card mestre-ferramentas">
+        <h2>⚡ Ferramentas</h2>
+        <div class="ferramentas-grid">
+          <div class="ferramenta-item">
+            <h3>🌤️ Clima</h3>
+            <select id="clima-estacao">
+              <option value="verao">Primavera/Verão</option>
+              <option value="inverno">Outono/Inverno</option>
+            </select>
+            <button type="button" id="btn-clima" class="btn-primary">Rolar d100</button>
+            <div id="clima-result" class="ferramenta-result hidden"></div>
+          </div>
+          <div class="ferramenta-item">
+            <h3>🎯 CD Captura</h3>
+            <div class="calc-mini">
+              <label>Nv</label><input type="number" id="calc-nivel" min="1" max="20" value="3" />
+              <label>SR</label>
+              <select id="calc-sr">
+                <option value="0.125">1/8</option><option value="0.25">1/4</option>
+                <option value="0.5" selected>1/2</option><option value="1">1</option>
+                <option value="2">2</option><option value="3">3</option>
+                <option value="4">4</option><option value="5">5</option>
+                <option value="6">6</option><option value="7">7</option>
+                <option value="8">8</option><option value="9">9</option>
+                <option value="10">10</option>
+              </select>
+              <label>HP</label><input type="number" id="calc-hp" min="0" value="15" />
+              <div class="calc-result"><span>CD:</span> <strong id="calc-cd">14</strong></div>
+            </div>
+          </div>
+          <div class="ferramenta-item">
+            <h3>📝 Notas da Sessão</h3>
+            <textarea id="mestre-notas" rows="4" placeholder="Anotações rápidas..."></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- Iniciativa -->
+      <section class="card mestre-iniciativa">
+        <h2>⚔️ Iniciativa</h2>
+        <div class="iniciativa-add">
+          <input type="text" id="inic-nome" placeholder="Nome ou Pokémon" />
+          <input type="number" id="inic-valor" placeholder="Iniciativa" />
+          <button type="button" id="inic-add">+</button>
+        </div>
+        <ol id="iniciativa-lista" class="iniciativa-lista"></ol>
+        <button type="button" id="inic-limpar" class="btn-small">Limpar</button>
+      </section>
+
+      <!-- NPCs / Inimigos rápidos -->
+      <section class="card mestre-npcs">
+        <h2>👹 NPCs / Inimigos</h2>
+        <div class="npc-add">
+          <input type="text" id="npc-nome" placeholder="Nome" />
+          <input type="text" id="npc-hp" placeholder="HP (ex: 24/24)" />
+          <input type="text" id="npc-info" placeholder="Info extra (opcional)" />
+          <button type="button" id="npc-add">+</button>
+        </div>
+        <ul id="npc-lista" class="npc-lista"></ul>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/js/mestre.js"></script>
+</body>
+</html>

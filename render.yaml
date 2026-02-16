@@ -1,0 +1,9 @@
+# Render - deploy gratuito
+# Conecte o repo e Render usa estas configurações automaticamente
+
+services:
+  - type: web
+    name: ficha-pokemon
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python web/app.py

@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Ficha salva (dados locais)
+ficha_save.json
+ficha_*.json
+ficha_save.backup.json
+
+# Build / distribuição
+build/
+dist/
+*.spec
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log

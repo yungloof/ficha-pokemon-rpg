@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha RPG Pokémon: Versão Oficial</title>
+  <meta name="theme-color" content="#0D1117">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <div class="header-top">
+        <input type="text" id="nome" placeholder="Nome do Treinador" />
+        <div class="nivel-info">
+          <label>Nv.</label>
+          <input type="number" id="nivel" min="1" value="1" />
+          <span class="badge" data-tip="Bônus Prof">PROF <span id="prof">+2</span></span>
+          <span class="badge">MAX SR <span id="max_sr">2</span></span>
+          <span class="badge">SLOTS <span id="slots">3</span></span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <label class="theme-selector-wrap">
+          <span class="theme-label">Tema</span>
+          <select id="theme-select" title="Escolha um tema Pokémon">
+            <option value="bulbasaur">🌿 Bulbasaur</option>
+            <option value="pikachu">⚡ Pikachu</option>
+            <option value="charmander">🔥 Charmander</option>
+            <option value="squirtle">💧 Squirtle</option>
+            <option value="gastly">👻 Gastly</option>
+            <option value="mew">✨ Mew</option>
+            <option value="umbreon">🌙 Umbreon</option>
+            <option value="gengar">😈 Gengar</option>
+            <option value="pokebola">🔴 Pokébola</option>
+          </select>
+        </label>
+        <div class="export-import">
+          <a href="/mestre" class="btn-mestre" title="Abrir painel do Mestre">🎮 Mestre</a>
+          <button type="button" id="btn-sessao" title="Entrar em sessão do Mestre">📡 Sessão</button>
+          <button type="button" id="btn-export" title="Exportar ficha como JSON">📤 Exportar</button>
+          <button type="button" id="btn-import" title="Importar ficha (compatível com versão Flet)">📥 Importar</button>
+          <input type="file" id="input-import" accept=".json" hidden />
+        </div>
+      </div>
+    </header>
+
+    <div id="modal-sessao" class="modal hidden">
+      <div class="modal-content modal-sessao">
+        <h3>📡 Entrar em Sessão</h3>
+        <p class="desc">Digite o código que o Mestre forneceu. Suas rolagens serão visíveis para ele.</p>
+        <label>Código</label>
+        <input type="text" id="sessao-codigo" placeholder="Ex: ABC123" maxlength="10" />
+        <label>Seu nome (Treinador)</label>
+        <input type="text" id="sessao-jogador" placeholder="Nome do Treinador" />
+        <div class="modal-actions">
+          <button type="button" id="sessao-sair" class="btn-secondary hidden">Sair da Sessão</button>
+          <button type="button" id="sessao-entrar" class="primary">Entrar</button>
+        </div>
+      </div>
+    </div>
+
+    <nav class="nav-tabs">
+      <button class="tab active" data-tab="treinador">🏅 Treinador</button>
+      <button class="tab" data-tab="pericias">🎯 Perícias</button>
+      <button class="tab" data-tab="mochila">🎒 Mochila</button>
+      <button class="tab" data-tab="equipe">🐾 Equipe</button>
+      <button class="tab" data-tab="regras">📖 Regras</button>
+    </nav>
+
+    <main class="content">
+      <section id="panel-treinador" class="panel active">
+        <div class="card-group">
+          <div class="card">
+            <h3>🌍 Região de Origem</h3>
+            <select id="regiao"></select>
+            <p id="regiao-desc" class="desc"></p>
+            <p id="regiao-hab" class="hab"></p>
+          </div>
+          <div class="card">
+            <h3>📜 Origem de Jornada</h3>
+            <select id="origem_jornada"></select>
+            <p id="origem-desc" class="desc"></p>
+            <p id="origem-hab" class="hab"></p>
+            <p id="origem-equip" class="equip"></p>
+            <div id="container-tm" class="hidden">
+              <label>TM (Estudioso)</label>
+              <select id="tm"></select>
+            </div>
+          </div>
+          <div class="card">
+            <h3>⭐ Especialização</h3>
+            <label>1ª (Nv 1)</label>
+            <select id="especializacao"></select>
+            <div id="container-espec-2" class="espec-extra hidden">
+              <label>2ª (Nv 7+)</label>
+              <select id="especializacao_2"></select>
+            </div>
+            <div id="container-espec-3" class="espec-extra hidden">
+              <label>3ª (Nv 18+)</label>
+              <select id="especializacao_3"></select>
+            </div>
+            <p id="espec-desc" class="desc"></p>
+            <div id="container-espec-pericia" class="hidden">
+              <label>Escolha a perícia</label>
+              <select id="espec_pericia"></select>
+            </div>
+            <div id="container-espec-atributo" class="hidden">
+              <label>Atributo +1</label>
+              <select id="espec_atributo"></select>
+            </div>
+          </div>
+          <div class="card">
+            <h3>🎓 Classe (Nv.2+)</h3>
+            <select id="classe"></select>
+            <p id="classe-desc" class="desc"></p>
+            <div id="classe-hab" class="hab classe-habilidades"></div>
+          </div>
+        </div>
+
+          <div class="card combate">
+          <h3>⚡ Combate</h3>
+          <div class="combate-grid">
+            <div class="stat-box">
+              <span>CA</span>
+              <strong id="ca">10</strong>
+            </div>
+            <div class="stat-box">
+              <span>INIC.</span>
+              <strong id="inic">+0</strong>
+              <button type="button" class="btn-roll" id="roll-inic" title="Rolar iniciativa">🎲</button>
+            </div>
+            <div class="stat-box">
+              <span>DESL.</span>
+              <input type="text" id="deslocamento" value="9m" />
+            </div>
+          </div>
+          <p id="resultado-inic" class="resultado"></p>
+          <div class="hp-manager">
+            <div class="hp-row">
+              <div class="hp-label-wrap">
+                <span class="hp-icon">❤️</span>
+                <span class="hp-title">PV</span>
+              </div>
+              <div class="hp-values">
+                <input type="text" id="hp_atual" class="hp-input-current" />
+                <span class="hp-sep">/</span>
+                <input type="number" id="hp_max" class="hp-input-max" />
+              </div>
+              <div class="hp-buttons">
+                <button type="button" class="btn-sm btn-hp" id="hp-minus" title="−1 PV">−</button>
+                <button type="button" class="btn-sm btn-hp" id="hp-plus" title="+1 PV">+</button>
+              </div>
+            </div>
+            <div class="hp-bar-wrap">
+              <div class="hp-bar"><div id="hp-bar-fill" class="hp-fill"></div></div>
+              <span id="hp-sug" class="hp-sug"></span>
+            </div>
+          </div>
+          <div class="saves">
+            <h4>🛡️ Testes de Resistência</h4>
+            <div id="saves-grid"></div>
+            <p id="resultado-save" class="resultado"></p>
+          </div>
+          <div class="roller">
+            <h4>🎲 Roller</h4>
+            <select id="roller-dado"><option value="d20">d20</option><option value="d12">d12</option><option value="d10">d10</option><option value="d8">d8</option><option value="d6">d6</option><option value="d4">d4</option></select>
+            <span>+</span>
+            <input type="number" id="roller-mod" value="0" placeholder="Mod" />
+            <button type="button" class="btn-roll" id="roller-btn">Rolar</button>
+            <span id="roller-result"></span>
+          </div>
+          <div class="historico">
+            <h4>📜 Histórico</h4>
+            <div id="historico-list"></div>
+          </div>
+        </div>
+
+        <div class="card atributos">
+          <h3>💪 Atributos</h3>
+          <div id="point-buy-status"></div>
+          <div id="atributos-grid"></div>
+        </div>
+
+        <div class="card talentos-card">
+          <h3>✨ Talentos</h3>
+          <div class="talentos-add-row">
+            <select id="talento-select"></select>
+            <button type="button" id="talento-add-btn">+ Adicionar</button>
+          </div>
+          <div id="talentos-selected" class="talentos-chips"></div>
+          <div id="talentos-desc" class="desc talentos-desc"></div>
+        </div>
+      </section>
+
+      <section id="panel-pericias" class="panel">
+        <div class="card">
+          <h3>🎯 Perícias</h3>
+          <p id="pericias-auto" class="auto"></p>
+          <p id="resultado-pericia" class="resultado"></p>
+          <div id="pericias-grid"></div>
+        </div>
+      </section>
+
+      <section id="panel-mochila" class="panel panel-mochila">
+        <div class="mochila-grid">
+        <div class="card">
+          <h3>💰 Pokédollars</h3>
+          <input type="text" id="pokedollars" />
+          <button type="button" id="roll-dinheiro">🎲 Rolar Dinheiro Inicial</button>
+          <p id="resultado-dinheiro" class="resultado"></p>
+        </div>
+        <div class="card">
+          <h3>🎒 Mochila</h3>
+          <label>Pokébolas</label>
+          <input type="text" id="pokebolas" />
+          <label>Itens Chave</label>
+          <textarea id="itens_chave" rows="3"></textarea>
+          <label>Consumíveis</label>
+          <textarea id="consumiveis" rows="2"></textarea>
+          <label>Pacote de Aventura</label>
+          <select id="pacote_aventura"></select>
+          <p id="pacote-desc" class="desc"></p>
+        </div>
+        </div>
+      </section>
+
+      <section id="panel-equipe" class="panel">
+        <div class="card">
+          <h3>⚔️ Equipe Pokémon</h3>
+          <div class="add-poke">
+            <input type="text" id="novo-poke-nome" placeholder="Nome do Pokémon" />
+            <button type="button" id="add-poke">+ Adicionar</button>
+          </div>
+          <div id="lista-pokemons"></div>
+        </div>
+      </section>
+
+      <section id="panel-regras" class="panel">
+        <div class="card regras-search-card">
+          <div class="regras-search-row">
+            <input type="search" id="regras-search" placeholder="Ex: captura, pescaria, lealdade..." autocomplete="off" />
+            <div class="regras-search-nav hidden" id="regras-search-nav">
+              <span id="regras-search-count"></span>
+              <button type="button" id="regras-search-prev" title="Anterior">←</button>
+              <button type="button" id="regras-search-next" title="Próximo">→</button>
+            </div>
+          </div>
+        </div>
+        <div class="card calc-captura">
+          <h3>🎯 Calculadora de Captura</h3>
+          <p class="desc">CD = 10 + SR base (arred. ↓) + nível + vida restante ÷ 10 (arred. ↓). A Pokébola adiciona bônus à <em>rolagem</em>.</p>
+          <div class="calc-captura-grid">
+            <label>Nível do Pokémon</label>
+            <input type="number" id="calc-nivel" min="1" max="20" value="3" placeholder="1–20" />
+            <label>SR</label>
+            <select id="calc-sr">
+              <option value="0.125">1/8</option>
+              <option value="0.25">1/4</option>
+              <option value="0.5" selected>1/2</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+              <option value="13">13</option>
+              <option value="14">14</option>
+              <option value="15">15</option>
+            </select>
+            <label>HP Atual (vida restante)</label>
+            <input type="number" id="calc-hp-atual" min="0" value="15" placeholder="Ex: 15" />
+            <label>Pokébola (bônus na rolagem)</label>
+            <select id="calc-pokebola">
+              <option value="0">Pokébola (+0)</option>
+              <option value="5">Great Ball (+5)</option>
+              <option value="10">Ultra Ball (+10)</option>
+              <option value="10" data-cond="níveis">Level Ball (+10 a +30)</option>
+              <option value="15" data-cond="inseto-agua">Net Ball (+15 vs Inseto/Água)</option>
+              <option value="15" data-cond="nv5">Nest Ball (+15 vs Nv ≤5)</option>
+              <option value="15" data-cond="repetida">Repeat Ball (+15 vs espécie capturada)</option>
+              <option value="5">Luxury Ball (+5, Lealdade +1)</option>
+              <option value="15" data-cond="agua">Dive Ball (+15 vs na água)</option>
+              <option value="15" data-cond="noite">Dusk Ball (+15 à noite/escuro)</option>
+              <option value="20" data-cond="moon">Moon Ball (+20 vs Moon Stone)</option>
+              <option value="5">Heal Ball (+5, cura após captura)</option>
+              <option value="2" data-cond="rodadas">Timer Ball (+2/rodada, máx +20)</option>
+              <option value="5">Premier Ball (+5, CAR +2)</option>
+              <option value="20" data-cond="1rodada">Quick Ball (+20 só 1ª rodada)</option>
+              <option value="20" data-cond="pescado">Lure Ball (+20 vs pescado)</option>
+              <option value="30" data-cond="love">Love Ball (+30 vs mesmo sp. gênero oposto)</option>
+              <option value="5" data-cond="tamanho">Heavy Ball (+5 a +20)</option>
+              <option value="20" data-cond="ultra">Beast Ball (+20 vs Ultra Beast)</option>
+              <option value="999">Master Ball (automático)</option>
+            </select>
+          </div>
+          <div class="calc-captura-results">
+            <div class="calc-captura-result" id="calc-captura-result">
+              <span class="calc-cd-label">CD da Captura:</span>
+              <strong class="calc-cd-val" id="calc-cd-val">—</strong>
+            </div>
+            <div class="calc-captura-result calc-bonus" id="calc-bonus-result">
+              <span class="calc-cd-label">Bônus na rolagem:</span>
+              <strong class="calc-cd-val calc-bonus-val" id="calc-bonus-val">—</strong>
+            </div>
+          </div>
+          <p class="calc-vantagem" id="calc-vantagem-dica">💡 Vantagem se: envenenado, queimando, paralisado, congelado, dormindo, confuso ou impedido. Rolagem = d20 + mod Adestrar Animais + prof + bônus Pokébola.</p>
+        </div>
+        <div class="card resumo">
+          <h3>📋 Resumo de Combate</h3>
+          <div id="regras-resumo" class="markdown"></div>
+        </div>
+        <div class="card regras-full">
+          <h3>📖 Guia Completo</h3>
+          <div id="regras-texto" class="markdown"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="modal-editar-poke" class="modal hidden">
+    <div class="modal-content">
+      <h3>✏️ Editar Pokémon</h3>
+      <label>Nome</label>
+      <input type="text" id="edit-poke-nome" />
+      <label>Nível</label>
+      <input type="number" id="edit-poke-nivel" min="1" />
+      <label>SR</label>
+      <input type="number" id="edit-poke-sr" min="0" step="0.5" />
+      <label>HP Máx</label>
+      <input type="number" id="edit-poke-hp_max" min="1" />
+      <label>Tipo</label>
+      <select id="edit-poke-tipo"></select>
+      <label>Natureza</label>
+      <select id="edit-poke-natureza"></select>
+      <label>Lealdade</label>
+      <select id="edit-poke-lealdade"></select>
+      <label>Habilidade</label>
+      <textarea id="edit-poke-habilidade" rows="2"></textarea>
+      <div class="modal-actions">
+        <button type="button" id="edit-poke-cancel">Cancelar</button>
+        <button type="button" id="edit-poke-save" class="primary">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="roll-overlay" class="roll-overlay roll-overlay-hidden" aria-hidden="true">
+    <div class="roll-pokeball-wrap">
+      <div class="roll-pokeball">
+        <div class="roll-pokeball-top"></div>
+        <div class="roll-pokeball-band"></div>
+        <div class="roll-pokeball-bottom"></div>
+        <div class="roll-pokeball-center">
+          <span class="roll-result-num">?</span>
+        </div>
+      </div>
+      <p class="roll-result-msg"></p>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

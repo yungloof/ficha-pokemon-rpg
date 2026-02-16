@@ -1,0 +1,146 @@
+/* Mestre - Dashboard do Narrador */
+.mestre-app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.mestre-header {
+  margin-bottom: 20px;
+}
+
+.mestre-title {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.link-player {
+  color: var(--acento);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.link-player:hover {
+  text-decoration: underline;
+}
+
+.mestre-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Sessão */
+.mestre-sessao .sessao-state {
+  margin-top: 12px;
+}
+
+.sessao-codigo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.sessao-codigo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.5rem;
+  letter-spacing: 0.2em;
+  color: var(--primaria);
+}
+
+.btn-primary {
+  background: var(--gradient-prim);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: var(--card-hover);
+  color: var(--texto);
+  border: 1px solid var(--borda);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.rolls-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.rolls-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--borda);
+  font-size: 0.9rem;
+}
+
+.rolls-list .roll-jogador {
+  font-weight: 700;
+  color: var(--acento);
+  min-width: 100px;
+}
+
+.rolls-list .roll-msg {
+  flex: 1;
+}
+
+.rolls-list .roll-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+}
+
+.rolls-list li.roll-crit .roll-num { color: var(--primaria); }
+.rolls-list li.roll-fumble .roll-num { color: var(--danger); }
+
+.ferramentas-grid {
+  display: grid;
+  gap: 20px;
+}
+
+@media (min-width: 600px) {
+  .ferramentas-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.calc-mini {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr auto 1fr;
+  gap: 6px 10px;
+  align-items: center;
+}
+
+.calc-mini input, .calc-mini select { width: 60px; padding: 6px; }
+
+.iniciativa-add, .npc-add {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.iniciativa-lista, .npc-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.iniciativa-lista li, .npc-lista li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--fundo);
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
