@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mestre – RPG Pokémon</title>
+  <title>Mesa do Mestre – RPG Pokémon</title>
   <meta name="theme-color" content="#0D1117">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="/static/css/style.css">
@@ -11,128 +11,174 @@
 </head>
 <body>
   <div id="app" class="mestre-app">
-    <!-- Tela de Login (visível até autenticar) -->
     <div id="mestre-login-wrap" class="mestre-login-wrap">
       <div class="mestre-login-card card">
         <h2>🎮 Mesa do Mestre</h2>
-        <p class="desc">Entre com suas credenciais para acessar o painel.</p>
+        <p class="desc">Entre para acessar o painel.</p>
         <form id="mestre-login-form" class="mestre-login-form">
-          <label>Usuário</label>
-          <input type="text" id="login-user" name="username" required autocomplete="username" />
-          <label>Senha</label>
-          <input type="password" id="login-pass" name="password" required autocomplete="current-password" />
+          <input type="text" id="login-user" placeholder="Usuário" required autocomplete="username" />
+          <input type="password" id="login-pass" placeholder="Senha" required autocomplete="current-password" />
           <p id="login-err" class="login-err hidden"></p>
           <button type="submit" class="btn-primary">Entrar</button>
         </form>
-        <a href="/" class="link-player">← Voltar ao Player</a>
+        <a href="/" class="link-player">← Voltar</a>
       </div>
     </div>
 
-    <!-- Dashboard (visível após login) -->
     <div id="mestre-dashboard" class="mestre-dashboard hidden">
-    <header class="header mestre-header">
-      <div class="header-top">
-        <h1 class="mestre-title">🎮 Mesa do Mestre</h1>
-        <span id="mestre-user" class="mestre-user"></span>
-        <button type="button" id="btn-logout" class="btn-small">Sair</button>
-        <a href="/" class="link-player">← Voltar ao Player</a>
-      </div>
-    </header>
-
-    <main class="mestre-main">
-      <!-- Sessão -->
-      <section class="card mestre-sessao">
-        <h2>📡 Sessão</h2>
-        <div id="sessao-nao-ativa" class="sessao-state">
-          <button type="button" id="btn-criar-sessao" class="btn-primary">Criar Sessão</button>
-          <p class="desc">Jogadores entram com o código em suas fichas (entrar em sessão).</p>
+      <header class="mestre-header">
+        <h1>🎮 Mesa do Mestre</h1>
+        <div class="mestre-header-right">
+          <span id="mestre-user" class="mestre-user"></span>
+          <a href="/" class="link-player">Player</a>
+          <button type="button" id="btn-logout" class="btn-ghost">Sair</button>
         </div>
-        <div id="sessao-ativa" class="sessao-state hidden">
-          <div class="sessao-codigo-wrap">
-            <span class="sessao-label">Código da sessão:</span>
-            <strong class="sessao-codigo" id="sessao-codigo">------</strong>
-            <button type="button" id="btn-copiar-codigo" class="btn-small">Copiar</button>
-          </div>
-          <button type="button" id="btn-encerrar-sessao" class="btn-secondary">Encerrar Sessão</button>
-        </div>
-      </section>
+      </header>
 
-      <!-- Rolagens dos jogadores -->
-      <section class="card mestre-rolls">
-        <h2>🎲 Rolagens dos Jogadores</h2>
-        <div id="rolls-empty" class="rolls-empty">Nenhuma rolagem ainda.</div>
-        <ul id="rolls-list" class="rolls-list hidden"></ul>
-      </section>
+      <nav class="mestre-tabs">
+        <button type="button" class="mestre-tab active" data-tab="combate">⚔️ Combate</button>
+        <button type="button" class="mestre-tab" data-tab="encontros">🐾 Encontros</button>
+        <button type="button" class="mestre-tab" data-tab="rolagens">🎲 Rolagens</button>
+        <button type="button" class="mestre-tab" data-tab="referencia">📖 Referência</button>
+      </nav>
 
-      <!-- Ferramentas rápidas -->
-      <section class="card mestre-ferramentas">
-        <h2>⚡ Ferramentas</h2>
-        <div class="ferramentas-grid">
-          <div class="ferramenta-item">
-            <h3>🌤️ Clima</h3>
-            <select id="clima-estacao">
-              <option value="verao">Primavera/Verão</option>
-              <option value="inverno">Outono/Inverno</option>
-            </select>
-            <button type="button" id="btn-clima" class="btn-primary">Rolar d100</button>
-            <div id="clima-result" class="ferramenta-result hidden"></div>
-          </div>
-          <div class="ferramenta-item">
-            <h3>🎯 CD Captura</h3>
-            <div class="calc-mini">
-              <label>Nv</label><input type="number" id="calc-nivel" min="1" max="20" value="3" />
-              <label>SR</label>
-              <select id="calc-sr">
-                <option value="0.125">1/8</option><option value="0.25">1/4</option>
-                <option value="0.5" selected>1/2</option><option value="1">1</option>
-                <option value="2">2</option><option value="3">3</option>
-                <option value="4">4</option><option value="5">5</option>
-                <option value="6">6</option><option value="7">7</option>
-                <option value="8">8</option><option value="9">9</option>
-                <option value="10">10</option>
-              </select>
-              <label>HP</label><input type="number" id="calc-hp" min="0" value="15" />
-              <div class="calc-result"><span>CD:</span> <strong id="calc-cd">14</strong></div>
+      <main class="mestre-main">
+        <!-- ABA COMBATE -->
+        <section id="tab-combate" class="mestre-tab-panel active">
+          <div class="combate-grid">
+            <div class="card combate-iniciativa">
+              <div class="card-header-row">
+                <h2>Iniciativa</h2>
+                <div class="card-actions">
+                  <button type="button" id="inic-proximo" class="btn-primary btn-sm" title="Próximo turno">Próximo</button>
+                  <button type="button" id="inic-limpar" class="btn-ghost btn-sm">Limpar</button>
+                </div>
+              </div>
+              <div class="iniciativa-add">
+                <input type="text" id="inic-nome" placeholder="Nome" />
+                <input type="number" id="inic-valor" placeholder="Inic." title="Iniciativa" />
+                <button type="button" id="inic-add" class="btn-add">+</button>
+                <button type="button" id="inic-rolar-todos" class="btn-ghost btn-sm">Rolar todos</button>
+                <button type="button" id="inic-importar-jogadores" class="btn-ghost btn-sm">Importar jogadores</button>
+              </div>
+              <ol id="iniciativa-lista" class="iniciativa-lista"></ol>
+            </div>
+
+            <div class="card combate-npcs">
+              <div class="card-header-row">
+                <h2>NPCs e Inimigos</h2>
+              </div>
+              <div class="npc-toolbar">
+                <div class="npc-add-simple">
+                  <input type="text" id="npc-nome" placeholder="Nome" />
+                  <input type="text" id="npc-hp" placeholder="HP" title="ex: 24/24" />
+                  <button type="button" id="npc-add" class="btn-add">+</button>
+                </div>
+                <div class="npc-add-pokedex">
+                  <input type="text" id="npc-pokedex-search" placeholder="Buscar Pokémon (Enter)" />
+                </div>
+                <button type="button" id="npc-add-treinador" class="btn-ghost btn-sm" title="Adicionar treinador NPC com equipe de Pokémon">+ Treinador</button>
+              </div>
+              <div id="npc-lista" class="npc-lista"></div>
             </div>
           </div>
-          <div class="ferramenta-item">
-            <h3>📝 Notas da Sessão</h3>
-            <textarea id="mestre-notas" rows="4" placeholder="Anotações rápidas..."></textarea>
+        </section>
+
+        <!-- ABA ENCONTROS -->
+        <section id="tab-encontros" class="mestre-tab-panel">
+          <div class="card card-encounter">
+            <h2>Encontro</h2>
+            <div class="encounter-row">
+              <span><label>Nv</label><input type="number" id="enc-nivel" min="1" max="20" value="5" /></span>
+              <span><label>SR máx</label><select id="enc-sr-max">
+                <option value="0.5">1/2</option><option value="1">1</option><option value="3">3</option>
+                <option value="5">5</option><option value="6">6</option><option value="10" selected>10</option>
+                <option value="13">13</option><option value="15">15</option>
+              </select></span>
+              <span><label>Tipo</label><select id="enc-tipo">
+                <option value="">Qualquer</option>
+                <option value="Normal">Normal</option><option value="Fogo">Fogo</option><option value="Água">Água</option>
+                <option value="Grama">Grama</option><option value="Elétrico">Elétrico</option><option value="Gelo">Gelo</option>
+                <option value="Lutador">Lutador</option><option value="Venenoso">Venenoso</option><option value="Terra">Terra</option>
+                <option value="Voador">Voador</option><option value="Psíquico">Psíquico</option><option value="Inseto">Inseto</option>
+                <option value="Pedra">Pedra</option><option value="Fantasma">Fantasma</option><option value="Dragão">Dragão</option>
+                <option value="Sombrio">Sombrio</option><option value="Aço">Aço</option><option value="Fada">Fada</option>
+              </select></span>
+              <span><label>Qtd</label><input type="number" id="enc-qty" min="1" max="6" value="1" /></span>
+              <button type="button" id="btn-encounter" class="btn-primary">Rolar</button>
+              <button type="button" id="btn-encounter-manual" class="btn-ghost">Escolher</button>
+            </div>
+            <div id="encounter-result" class="encounter-result hidden"></div>
+            <div id="encounter-manual-wrap" class="encounter-manual hidden">
+              <div id="enc-manual-list" class="enc-manual-list"></div>
+            </div>
+            <div class="encounter-tools">
+              <div class="enc-tool-clima">
+                <label>Clima</label>
+                <select id="clima-estacao"><option value="verao">Verão</option><option value="inverno">Inverno</option></select>
+                <button type="button" id="btn-clima" class="btn-ghost btn-sm">Rolar d100</button>
+                <span id="clima-result" class="clima-result hidden"></span>
+              </div>
+              <div class="enc-tool-cd">
+                <span class="enc-tool-label">CD Captura:</span>
+                <span><label>Nv</label><input type="number" id="calc-nivel" min="1" value="3" title="Nível" /></span>
+                <span><label>SR</label><select id="calc-sr" title="Taxa de captura">
+                  <option value="0.125">1/8</option><option value="0.25">1/4</option><option value="0.5" selected>1/2</option>
+                  <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                  <option value="5">5</option><option value="10">10</option>
+                </select></span>
+                <span><label>HP</label><input type="number" id="calc-hp" min="0" value="15" title="HP restante" /></span>
+                <span class="enc-cd-result"><strong id="calc-cd">14</strong></span>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- Iniciativa -->
-      <section class="card mestre-iniciativa">
-        <h2>⚔️ Iniciativa</h2>
-        <div class="iniciativa-add">
-          <input type="text" id="inic-nome" placeholder="Nome ou Pokémon" />
-          <input type="number" id="inic-valor" placeholder="Iniciativa" />
-          <button type="button" id="inic-add">+</button>
-        </div>
-        <ol id="iniciativa-lista" class="iniciativa-lista"></ol>
-        <button type="button" id="inic-limpar" class="btn-small">Limpar</button>
-      </section>
+        <!-- ABA ROLAGENS -->
+        <section id="tab-rolagens" class="mestre-tab-panel">
+          <div class="card mestre-sessao">
+            <h2>Sessão</h2>
+            <div id="sessao-nao-ativa" class="sessao-state">
+              <button type="button" id="btn-criar-sessao" class="btn-primary">Criar Sessão</button>
+              <p class="desc">Jogadores entram com o código nas fichas.</p>
+            </div>
+            <div id="sessao-ativa" class="sessao-state hidden">
+              <div class="sessao-codigo-wrap">
+                <strong id="sessao-codigo">------</strong>
+                <button type="button" id="btn-copiar-codigo" class="btn-ghost btn-sm">Copiar</button>
+              </div>
+              <button type="button" id="btn-encerrar-sessao" class="btn-ghost">Encerrar</button>
+            </div>
+          </div>
+          <div class="card mestre-rolls">
+            <h2>Rolagens dos Jogadores</h2>
+            <div id="rolls-empty" class="rolls-empty">Nenhuma rolagem.</div>
+            <ul id="rolls-list" class="rolls-list hidden"></ul>
+          </div>
+        </section>
 
-      <!-- Guia do Mestre -->
-      <section class="card mestre-guia">
-        <h2>📖 Guia do Mestre</h2>
-        <p class="desc">Referência rápida para encontros, combate e regras de mesa.</p>
-        <div id="guia-container" class="guia-accordion"></div>
-      </section>
+        <!-- ABA REFERÊNCIA -->
+        <section id="tab-referencia" class="mestre-tab-panel">
+          <div class="card mestre-guia">
+            <h2>Guia do Mestre</h2>
+            <div id="guia-container" class="guia-accordion"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
 
-      <!-- NPCs / Inimigos rápidos -->
-      <section class="card mestre-npcs">
-        <h2>👹 NPCs / Inimigos</h2>
-        <div class="npc-add">
-          <input type="text" id="npc-nome" placeholder="Nome" />
-          <input type="text" id="npc-hp" placeholder="HP (ex: 24/24)" />
-          <input type="text" id="npc-info" placeholder="Info extra (opcional)" />
-          <button type="button" id="npc-add">+</button>
-        </div>
-        <ul id="npc-lista" class="npc-lista"></ul>
-      </section>
-    </main>
+  <div id="modal-npc-treinador" class="modal hidden">
+    <div class="modal-content">
+      <h3>Treinador NPC</h3>
+      <label>Nome</label>
+      <input type="text" id="modal-treinador-nome" placeholder="Ex: Giovani, Líder do ginásio" />
+      <label>Equipe (adicionar Pokémon do encontro ou manualmente)</label>
+      <div id="modal-treinador-equipe" class="treinador-equipe-preview"></div>
+      <div class="modal-actions">
+        <button type="button" id="modal-treinador-cancel" class="btn-ghost">Cancelar</button>
+        <button type="button" id="modal-treinador-ok" class="btn-primary">Adicionar</button>
+      </div>
     </div>
   </div>
 

@@ -12,10 +12,14 @@
   const TALENTOS_PERICIA = { "Acrobata": "Acrobacia", "Dedos Rapidos": "Prestidigitação", "Musculoso": "Atletismo", "Perceptivo": "Percepção", "Sorrateiro": "Furtividade" };
   const ATTR_DISPLAY = { "for": "FOR", "des": "DES", "con": "CON", "int": "INT", "sab": "SAB", "car": "CAR" };
 
+  const SR_OPCOES = [0.125, 0.25, 0.5, 1, 2, 3, 5, 6, 8, 10, 12, 13, 14, 15];
+  const MAX_EQUIPE = 6;
+
   let C = {}; // Constantes (carregadas da API)
   let stats = {};
   let historicoRolagens = [];
   let editingPokeIndex = -1;
+  let pokedexCache = null; // Cache do Pokédex para autocomplete
 
   function getStatsDefault() {
     return {
@@ -105,11 +109,19 @@
     "Fada": "Encantador", "Sombrio": "Sombrio", "Venenoso": "Alquimista",
     "Normal": "Jogador de Equipe", "Gelo": "Esquiador"
   };
+  function getTiposArray(tipo) {
+    if (!tipo) return [];
+    return String(tipo).split("/").map(t => t.trim()).filter(Boolean);
+  }
+
   function getBonusTipoPokemon(tipo) {
     const especs = getEspecializacoesAtivas();
-    if (!tipo || !TIPO_ESPEC_MAP[tipo]) return 0;
-    const match = TIPO_ESPEC_MAP[tipo];
-    return especs.includes(match) ? 1 : 0;
+    const tipos = getTiposArray(tipo);
+    for (const t of tipos) {
+      const match = TIPO_ESPEC_MAP[t];
+      if (match && especs.includes(match)) return 1;
+    }
+    return 0;
   }
 
   function syncStatsFromUI() {
@@ -758,9 +770,18 @@
 
   function renderPokemons() {
     const list = $("lista-pokemons");
+    const empty = $("lista-pokemons-empty");
+    const slotsEl = $("equipe-slots");
     const pokes = stats.pokemons || [];
     const cores = C.CORES_TIPO_POKEMON || {};
     const lealdadeNiveis = C.LEALDADE_NIVEIS || {};
+
+    if (slotsEl) slotsEl.textContent = pokes.length + "/" + MAX_EQUIPE;
+
+    if (empty) {
+      empty.classList.toggle("hidden", pokes.length > 0);
+    }
+    list.classList.toggle("hidden", pokes.length === 0);
 
     list.innerHTML = pokes.map((p, i) => {
       p.tipo = p.tipo || "Normal";
@@ -770,31 +791,36 @@
       p.sr = p.sr || "1";
       p.lealdade = parseIntVal(p.lealdade, 0);
       const leal = lealdadeNiveis[String(p.lealdade)] || {};
-      const cor = cores[p.tipo] || "#888";
+      const tiposArr = getTiposArray(p.tipo);
+      const cor1 = cores[tiposArr[0]] || "#888";
+      const cor = cor1;
       const cur = parseIntVal(p.hp, 0);
       const mx = parseIntVal(p.hp_max, 1);
-      const pct = mx > 0 ? cur / mx : 0;
+      const pct = mx > 0 ? Math.min(1, cur / mx) : 0;
       const bonus = getBonusTipoPokemon(p.tipo);
+      const tipoBadges = tiposArr.map(t => `<span class="tipo-badge" style="background:${cores[t] || '#888'}">${escapeHtml(t)}</span>`).join(" ");
 
+      const acStr = p.ac != null && p.ac !== "" ? ` | AC ${p.ac}` : "";
       return `
         <div class="poke-card" style="border-left-color: ${cor}" data-poke-idx="${i}">
           <div class="poke-header">
             <div>
-              <span class="poke-nome">${p.nome || "?"}</span>
+              <span class="poke-slot">#${i + 1}</span>
+              <span class="poke-nome">${escapeHtml(p.nome || "?")}</span>
               <div class="poke-meta">
-                Nv.${p.nivel} | SR ${p.sr}
-                <span class="tipo-badge" style="background:${cor}">${p.tipo}</span>
+                Nv.${p.nivel} | SR ${p.sr}${acStr}
+                <span class="poke-tipos">${tipoBadges}</span>
               </div>
             </div>
             <div class="poke-actions">
               <button type="button" data-roll-poke="${i}" title="Rolar teste">🎲</button>
-              <button type="button" data-edit-poke="${i}">✏️</button>
-              <button type="button" data-del-poke="${i}">🗑️</button>
+              <button type="button" data-edit-poke="${i}" title="Editar">✏️</button>
+              <button type="button" data-del-poke="${i}" title="Remover">🗑️</button>
             </div>
           </div>
-          <div>${leal.emoji || ""} ${leal.nome || "Neutro"}</div>
-          <div>❤️ ${cur}/${mx} HP ${bonus ? `(+${bonus} bônus)` : ""}</div>
-          <div class="hp-bar"><div class="hp-fill" style="width:${pct*100}%;background:${cor}"></div></div>
+          <div class="poke-lealdade">${leal.emoji || ""} ${leal.nome || "Neutro"}</div>
+          <div class="poke-hp-line">❤️ ${cur}/${mx} HP ${bonus ? `(+${bonus})` : ""}</div>
+          <div class="hp-bar"><div class="hp-fill" style="width:${pct * 100}%;background:${cor}"></div></div>
           <div class="poke-hp-ctrl">
             <button type="button" class="btn-sm btn-hp" data-poke-hp="${i}" data-delta="-1">−</button>
             <button type="button" class="btn-sm btn-hp" data-poke-hp="${i}" data-delta="1">+</button>
@@ -863,12 +889,26 @@
   function openEditPoke(idx) {
     editingPokeIndex = idx;
     const p = stats.pokemons[idx];
+    const tiposArr = getTiposArray(p.tipo);
     $("edit-poke-nome").value = p.nome || "";
     $("edit-poke-nivel").value = p.nivel || "1";
-    $("edit-poke-sr").value = p.sr || "1";
     $("edit-poke-hp_max").value = p.hp_max || "20";
-    $("edit-poke-tipo").innerHTML = (C.TIPOS_POKEMON || []).map(t => `<option value="${t}">${t}</option>`).join("");
-    $("edit-poke-tipo").value = p.tipo || "Normal";
+    $("edit-poke-ac").value = p.ac != null && p.ac !== "" ? String(p.ac) : "";
+    // SR select
+    const srSel = $("edit-poke-sr");
+    if (srSel) {
+      const srVal = parseFloat(p.sr) || 1;
+      let opts = SR_OPCOES.map(s => `<option value="${s}">${s}</option>`);
+      if (!SR_OPCOES.includes(srVal)) opts.push(`<option value="${srVal}">${srVal}</option>`);
+      srSel.innerHTML = opts.join("");
+      srSel.value = String(srVal);
+    }
+    // Tipo primário / secundário
+    const tiposOpt = ["Nenhum", ...(C.TIPOS_POKEMON || [])];
+    $("edit-poke-tipo").innerHTML = tiposOpt.map(t => `<option value="${t}">${t}</option>`).join("");
+    $("edit-poke-tipo2").innerHTML = tiposOpt.map(t => `<option value="${t}">${t}</option>`).join("");
+    $("edit-poke-tipo").value = tiposArr[0] || "Normal";
+    $("edit-poke-tipo2").value = tiposArr[1] || "Nenhum";
     const nats = C.NATUREZAS_POKEMON || {};
     $("edit-poke-natureza").innerHTML = Object.keys(nats).map(n => `<option value="${n}">${n}</option>`).join("");
     $("edit-poke-natureza").value = p.natureza || "Nenhuma";
@@ -877,34 +917,189 @@
     $("edit-poke-lealdade").innerHTML = lealEntries.map(([k, v]) => `<option value="${k}">${v.emoji || ""} ${v.nome || k}</option>`).join("");
     $("edit-poke-lealdade").value = String(p.lealdade || 0);
     $("edit-poke-habilidade").value = p.habilidade || "";
+    // Preencher AC do Pokédex se vazio
+    const acEl = $("edit-poke-ac");
+    if (!acEl.value && p.nome) {
+      loadPokedex().then(pokedex => {
+        const pd = pokedex[p.nome];
+        if (pd && pd.ac != null) acEl.value = String(pd.ac);
+      });
+    }
+    // Carregar habilidades e movimentos do Pokédex
+    populateEditPokePokedexData(p.nome);
     $("modal-editar-poke").classList.remove("hidden");
+  }
+
+  function populateEditPokePokedexData(nome) {
+    const abilitiesWrap = $("edit-poke-habilidades-pokedex");
+    const movesWrap = $("edit-poke-moves-wrap");
+    const movesEl = $("edit-poke-moves");
+    if (!abilitiesWrap || !movesWrap || !movesEl) return;
+    abilitiesWrap.classList.add("hidden");
+    abilitiesWrap.innerHTML = "";
+    movesWrap.classList.add("hidden");
+    movesEl.innerHTML = "";
+    loadPokedex().then(pokedex => {
+      const pd = pokedex[nome];
+      if (!pd) return;
+      // Habilidades (clique para inserir no campo)
+      const habText = $("edit-poke-habilidade");
+      const abs = (pd.abilities || []).concat(pd.ability_hidden || []);
+      if (abs.length) {
+        abilitiesWrap.innerHTML = "<span class='label-chip'>Sugestões:</span> " +
+          abs.map(a => `<button type="button" class="chip-ability" data-name="${escapeHtml(a.name)}" title="${escapeHtml((a.desc || "").slice(0,80))}">${escapeHtml(a.name)}</button>`).join(" ");
+        abilitiesWrap.classList.remove("hidden");
+        abilitiesWrap.querySelectorAll(".chip-ability").forEach(btn => {
+          btn.onclick = () => {
+            const cur = habText.value.trim();
+            const add = btn.dataset.name;
+            habText.value = cur ? cur + ", " + add : add;
+          };
+        });
+      }
+      // Movimentos
+      const parts = [];
+      if (pd.moves_starting && pd.moves_starting.length)
+        parts.push("<strong>Iniciais:</strong> " + pd.moves_starting.join(", "));
+      if (pd.moves_by_level && Object.keys(pd.moves_by_level).length) {
+        const byLvl = Object.entries(pd.moves_by_level).sort((a,b) => Number(a[0]) - Number(b[0]));
+        parts.push("<strong>Por nível:</strong> " + byLvl.map(([lvl, moves]) => `Nv.${lvl}: ${moves.join(", ")}`).join(" · "));
+      }
+      if (pd.moves_tm && pd.moves_tm.length)
+        parts.push("<strong>TM:</strong> " + pd.moves_tm.slice(0, 24).join(", ") + (pd.moves_tm.length > 24 ? "..." : ""));
+      if (pd.moves_egg && pd.moves_egg.length)
+        parts.push("<strong>Egg:</strong> " + pd.moves_egg.slice(0, 12).join(", ") + (pd.moves_egg.length > 12 ? "..." : ""));
+      if (parts.length) {
+        movesEl.innerHTML = parts.map(p => `<div class="moves-row">${p}</div>`).join("");
+        movesWrap.classList.remove("hidden");
+      }
+    });
   }
 
   function saveEditPoke() {
     if (editingPokeIndex < 0) return;
     const p = stats.pokemons[editingPokeIndex];
-    p.nome = $("edit-poke-nome").value;
-    p.nivel = $("edit-poke-nivel").value;
-    p.sr = $("edit-poke-sr").value;
-    p.hp_max = $("edit-poke-hp_max").value;
-    p.tipo = $("edit-poke-tipo").value;
-    p.natureza = $("edit-poke-natureza").value;
+    const t1 = $("edit-poke-tipo")?.value || "Normal";
+    const t2 = $("edit-poke-tipo2")?.value || "Nenhum";
+    p.nome = $("edit-poke-nome").value?.trim() || p.nome;
+    p.nivel = $("edit-poke-nivel").value || "1";
+    p.sr = $("edit-poke-sr")?.value ?? p.sr;
+    const acVal = $("edit-poke-ac")?.value?.trim();
+    if (acVal) p.ac = acVal;
+    else delete p.ac;
+    p.hp_max = $("edit-poke-hp_max").value || "20";
+    p.tipo = t2 && t2 !== "Nenhum" ? t1 + "/" + t2 : t1;
+    p.natureza = $("edit-poke-natureza").value || "Nenhuma";
     p.lealdade = parseIntVal($("edit-poke-lealdade").value, 0);
-    p.habilidade = $("edit-poke-habilidade").value;
+    p.habilidade = $("edit-poke-habilidade").value || "";
     $("modal-editar-poke").classList.add("hidden");
     editingPokeIndex = -1;
     renderPokemons();
     atualizar();
   }
 
-  function addPoke() {
-    const nome = $("novo-poke-nome").value?.trim();
-    if (!nome) return;
+  async function loadPokedex() {
+    if (pokedexCache) return pokedexCache;
+    try {
+      const res = await fetch("/api/pokedex");
+      const json = await res.json();
+      if (json.ok && json.pokedex) {
+        pokedexCache = json.pokedex;
+        return pokedexCache;
+      }
+    } catch (e) { /* ignora */ }
+    return {};
+  }
+
+  function showPokedexSuggestions(query) {
+    const ul = $("pokedex-suggestions");
+    const inp = $("novo-poke-nome");
+    if (!ul || !inp) return;
+    const q = (query || inp.value || "").trim().toLowerCase();
+    if (!q || q.length < 2) {
+      ul.classList.add("hidden");
+      ul.innerHTML = "";
+      return;
+    }
+    const pokedex = pokedexCache || {};
+    const matches = Object.entries(pokedex)
+      .filter(([nome]) => nome.toLowerCase().includes(q))
+      .slice(0, 12);
+    if (matches.length === 0) {
+      ul.classList.add("hidden");
+      ul.innerHTML = "";
+      return;
+    }
+    ul.innerHTML = matches.map(([nome, dados]) => {
+      const tipos = (dados.tipo || []).join("/");
+      const hp = dados.hp != null ? dados.hp : "";
+      const ac = dados.ac != null ? dados.ac : "";
+      const extra = [ac ? `AC ${ac}` : "", hp ? `HP ${hp}` : ""].filter(Boolean).join(" | ");
+      return `<li data-nome="${escapeHtml(nome)}" data-sr="${dados.sr}" data-tipo="${escapeHtml(tipos)}" data-hp="${hp}" data-ac="${ac}">${escapeHtml(nome)} — SR ${dados.sr} (${escapeHtml(tipos)})${extra ? " · " + extra : ""}</li>`;
+    }).join("");
+    ul.classList.remove("hidden");
+    ul.querySelectorAll("li").forEach(li => {
+      li.onclick = () => {
+        const nome = li.dataset.nome;
+        const sr = li.dataset.sr || "1";
+        const tipoStr = li.dataset.tipo || "Normal";
+        const hpBase = li.dataset.hp ? String(li.dataset.hp) : "20";
+        const acBase = li.dataset.ac ? String(li.dataset.ac) : "";
+        addPokeFromPokedex(nome, sr, tipoStr, hpBase, acBase);
+        inp.value = "";
+        ul.classList.add("hidden");
+        ul.innerHTML = "";
+      };
+    });
+  }
+
+  function addPokeFromPokedex(nome, sr, tipoStr, hpBase, acBase) {
     stats.pokemons = stats.pokemons || [];
-    stats.pokemons.push({ nome, hp: "20", hp_max: "20", tipo: "Normal", natureza: "Nenhuma", habilidade: "", nivel: "1", sr: "1", lealdade: 0 });
-    $("novo-poke-nome").value = "";
+    if (stats.pokemons.length >= MAX_EQUIPE) {
+      showToast("Equipe cheia (máx " + MAX_EQUIPE + ")", false);
+      return;
+    }
+    const tipo = (tipoStr || "Normal").replace("/", "/");
+    const hpMax = hpBase || "20";
+    const pk = { nome, hp: hpMax, hp_max: hpMax, tipo, natureza: "Nenhuma", habilidade: "", nivel: "1", sr: String(sr), lealdade: 0 };
+    if (acBase) pk.ac = acBase;
+    stats.pokemons.push(pk);
     renderPokemons();
     atualizar();
+    saveToStorage();
+    showToast("✓ " + nome + " adicionado", true);
+  }
+
+  async function addPoke() {
+    const nomeRaw = ($("novo-poke-nome").value || "").trim();
+    if (!nomeRaw) return;
+    stats.pokemons = stats.pokemons || [];
+    if (stats.pokemons.length >= MAX_EQUIPE) {
+      showToast("Equipe cheia (máx " + MAX_EQUIPE + ")", false);
+      return;
+    }
+    let tipo = "Normal", sr = "1";
+    const pokedex = await loadPokedex();
+    const entry = Object.entries(pokedex).find(([k]) => k.toLowerCase() === nomeRaw.toLowerCase());
+    let hpMax = "20";
+    let acVal = "";
+    if (entry) {
+      const p = entry[1];
+      tipo = (p.tipo && p.tipo.length) ? p.tipo.join("/") : "Normal";
+      if (p.sr != null) sr = String(p.sr);
+      if (p.hp != null) hpMax = String(p.hp);
+      if (p.ac != null) acVal = String(p.ac);
+    }
+    const nome = nomeRaw.charAt(0).toUpperCase() + nomeRaw.slice(1).toLowerCase();
+    const pk = { nome, hp: hpMax, hp_max: hpMax, tipo, natureza: "Nenhuma", habilidade: "", nivel: "1", sr, lealdade: 0 };
+    if (acVal) pk.ac = acVal;
+    stats.pokemons.push(pk);
+    $("novo-poke-nome").value = "";
+    $("pokedex-suggestions")?.classList.add("hidden");
+    renderPokemons();
+    atualizar();
+    saveToStorage();
+    showToast("✓ " + nome + " adicionado", true);
   }
 
   function saveToStorage() {
@@ -1151,6 +1346,23 @@
     });
 
     $("add-poke").onclick = addPoke;
+    const novoPokeInp = $("novo-poke-nome");
+    if (novoPokeInp) {
+      novoPokeInp.onfocus = () => { loadPokedex().then(() => showPokedexSuggestions()); };
+      novoPokeInp.oninput = () => showPokedexSuggestions();
+      novoPokeInp.onblur = () => setTimeout(() => $("pokedex-suggestions")?.classList.add("hidden"), 200);
+      novoPokeInp.onkeydown = (e) => {
+        if (e.key === "Enter") {
+          const ul = $("pokedex-suggestions");
+          if (ul && !ul.classList.contains("hidden")) {
+            const first = ul.querySelector("li");
+            if (first) { first.click(); e.preventDefault(); return; }
+          }
+          addPoke();
+          e.preventDefault();
+        }
+      };
+    }
     $("edit-poke-cancel").onclick = () => { $("modal-editar-poke").classList.add("hidden"); editingPokeIndex = -1; };
     $("edit-poke-save").onclick = saveEditPoke;
 
@@ -1165,6 +1377,14 @@
     }, 10000);
 
     atualizar();
+
+    if (sessaoCodigo && sessaoJogador) {
+      fetch("/api/mestre/session/" + sessaoCodigo + "/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jogador: sessaoJogador || stats.nome || "Jogador", ficha: stats })
+      }).catch(() => {});
+    }
   }
 
   (function initSessao() {
@@ -1189,7 +1409,7 @@
       }
       modal.classList.remove("hidden");
     };
-    btnEntrar?.addEventListener("click", () => {
+    btnEntrar?.addEventListener("click", async () => {
       const cod = ($("sessao-codigo")?.value || "").trim().toUpperCase();
       const jog = ($("sessao-jogador")?.value || stats.nome || "Jogador").trim();
       if (!cod || cod.length < 4) return;
@@ -1197,6 +1417,13 @@
       sessaoJogador = jog;
       localStorage.setItem("ficha_sessao_codigo", cod);
       localStorage.setItem("ficha_sessao_jogador", jog);
+      try {
+        await fetch("/api/mestre/session/" + cod + "/join", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jogador: jog, ficha: stats })
+        });
+      } catch (e) { /* ignora */ }
       modal.classList.add("hidden");
       if (btnSessao) btnSessao.textContent = "📡 Sessão ✓";
     });

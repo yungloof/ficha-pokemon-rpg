@@ -227,13 +227,26 @@
       </section>
 
       <section id="panel-equipe" class="panel">
-        <div class="card">
-          <h3>⚔️ Equipe Pokémon</h3>
-          <div class="add-poke">
-            <input type="text" id="novo-poke-nome" placeholder="Nome do Pokémon" />
-            <button type="button" id="add-poke">+ Adicionar</button>
+        <div class="card equipe-card">
+          <div class="equipe-header">
+            <h3>⚔️ Equipe Pokémon</h3>
+            <span class="equipe-slots" id="equipe-slots">0/6</span>
           </div>
-          <div id="lista-pokemons"></div>
+          <div class="add-poke-wrap">
+            <div class="add-poke">
+              <div class="pokedex-search-wrap">
+                <input type="text" id="novo-poke-nome" placeholder="Buscar no Pokédex (ex: Pikachu, Charmander)" autocomplete="off" />
+                <ul id="pokedex-suggestions" class="pokedex-suggestions hidden"></ul>
+              </div>
+              <button type="button" id="add-poke" class="btn-add-poke">+ Adicionar</button>
+            </div>
+            <p class="add-poke-hint">Digite o nome e selecione da lista, ou use "Adicionar" para Pokémon personalizado.</p>
+          </div>
+          <div id="lista-pokemons-empty" class="lista-pokemons-empty hidden">
+            <p>Nenhum Pokémon na equipe.</p>
+            <p class="empty-hint">Busque pelo nome no Pokédex acima ou adicione manualmente.</p>
+          </div>
+          <div id="lista-pokemons" class="lista-pokemons"></div>
         </div>
       </section>
 
@@ -326,24 +339,55 @@
   </div>
 
   <div id="modal-editar-poke" class="modal hidden">
-    <div class="modal-content">
+    <div class="modal-content modal-editar-poke">
       <h3>✏️ Editar Pokémon</h3>
-      <label>Nome</label>
-      <input type="text" id="edit-poke-nome" />
-      <label>Nível</label>
-      <input type="number" id="edit-poke-nivel" min="1" />
-      <label>SR</label>
-      <input type="number" id="edit-poke-sr" min="0" step="0.5" />
-      <label>HP Máx</label>
-      <input type="number" id="edit-poke-hp_max" min="1" />
-      <label>Tipo</label>
-      <select id="edit-poke-tipo"></select>
-      <label>Natureza</label>
-      <select id="edit-poke-natureza"></select>
-      <label>Lealdade</label>
-      <select id="edit-poke-lealdade"></select>
-      <label>Habilidade</label>
-      <textarea id="edit-poke-habilidade" rows="2"></textarea>
+      <div class="edit-poke-grid">
+        <div>
+          <label>Nome</label>
+          <input type="text" id="edit-poke-nome" />
+        </div>
+        <div>
+          <label>Nível</label>
+          <input type="number" id="edit-poke-nivel" min="1" max="20" />
+        </div>
+        <div>
+          <label>SR</label>
+          <select id="edit-poke-sr"></select>
+        </div>
+        <div>
+          <label>AC</label>
+          <input type="number" id="edit-poke-ac" min="1" max="30" placeholder="Classe de armadura" />
+        </div>
+        <div>
+          <label>HP Máx</label>
+          <input type="number" id="edit-poke-hp_max" min="1" />
+        </div>
+        <div>
+          <label>Tipo primário</label>
+          <select id="edit-poke-tipo"></select>
+        </div>
+        <div>
+          <label>Tipo secundário</label>
+          <select id="edit-poke-tipo2"></select>
+        </div>
+        <div>
+          <label>Natureza</label>
+          <select id="edit-poke-natureza"></select>
+        </div>
+        <div>
+          <label>Lealdade</label>
+          <select id="edit-poke-lealdade"></select>
+        </div>
+      </div>
+      <label>Habilidade especial</label>
+      <div class="habilidade-row">
+        <textarea id="edit-poke-habilidade" rows="2" placeholder="Ex: Estático, Intimidação..."></textarea>
+        <div id="edit-poke-habilidades-pokedex" class="pokedex-suggest-abilities hidden"></div>
+      </div>
+      <div id="edit-poke-moves-wrap" class="edit-poke-moves hidden">
+        <label>Movimentos (Pokédex)</label>
+        <div id="edit-poke-moves" class="moves-pokedex"></div>
+      </div>
       <div class="modal-actions">
         <button type="button" id="edit-poke-cancel">Cancelar</button>
         <button type="button" id="edit-poke-save" class="primary">Salvar</button>

@@ -232,7 +232,7 @@ def api_mestre_session_create():
     codigo = _gera_codigo()
     while codigo in SESSOES:
         codigo = _gera_codigo()
-    SESSOES[codigo] = {"created_at": None, "ativo": True}
+    SESSOES[codigo] = {"created_at": None, "ativo": True, "jogadores": {}}
     ROLLS_CACHE[codigo] = deque(maxlen=MAX_ROLLS_PER_SESSION)
     return jsonify({"ok": True, "codigo": codigo})
 
@@ -260,6 +260,35 @@ def api_mestre_session_roll(codigo):
     }
     ROLLS_CACHE[codigo].append(entrada)
     return jsonify({"ok": True})
+
+
+@app.route("/api/mestre/session/<codigo>/join", methods=["POST"])
+def api_mestre_session_join(codigo):
+    """Jogador entra na sessão (enviando nome e ficha). Sem auth."""
+    codigo = codigo.upper().strip()
+    if codigo not in SESSOES:
+        return jsonify({"ok": False, "erro": "Sessão não encontrada"}), 404
+    dados = request.get_json()
+    if not isinstance(dados, dict):
+        return jsonify({"ok": False, "erro": "Dados inválidos"}), 400
+    jogador = (dados.get("jogador") or dados.get("nome") or "Desconhecido").strip()[:50]
+    ficha = dados.get("ficha")
+    if not isinstance(SESSOES[codigo].get("jogadores"), dict):
+        SESSOES[codigo]["jogadores"] = {}
+    SESSOES[codigo]["jogadores"][jogador] = {"ficha": ficha or {}, "joined_at": None}
+    return jsonify({"ok": True})
+
+
+@app.route("/api/mestre/session/<codigo>/jogadores")
+@_require_mestre
+def api_mestre_session_jogadores(codigo):
+    """Lista jogadores na sessão (com fichas). Apenas mestre."""
+    codigo = codigo.upper().strip()
+    if codigo not in SESSOES:
+        return jsonify({"ok": False, "erro": "Sessão não encontrada"}), 404
+    jogadores = SESSOES[codigo].get("jogadores", {})
+    lista = [{"nome": nome, "ficha": d.get("ficha", {})} for nome, d in jogadores.items()]
+    return jsonify({"ok": True, "jogadores": lista})
 
 
 @app.route("/api/mestre/session/<codigo>/rolls")
@@ -323,6 +352,117 @@ def api_mestre_guia():
     """Retorna o conteúdo do Guia do Mestre para referência rápida."""
     from guia_mestre import MESTRE_GUIA
     return jsonify({"ok": True, "guia": MESTRE_GUIA})
+
+
+# Mapeamento Tipo (EN) -> Tipo (PT) para Pokédex PMP
+TIPO_EN_PT = {
+    "Normal": "Normal", "Fire": "Fogo", "Water": "Água", "Grass": "Grama",
+    "Electric": "Elétrico", "Ice": "Gelo", "Fighting": "Lutador", "Poison": "Venenoso",
+    "Ground": "Terra", "Flying": "Voador", "Psychic": "Psíquico", "Bug": "Inseto",
+    "Rock": "Pedra", "Ghost": "Fantasma", "Dragon": "Dragão", "Dark": "Sombrio",
+    "Steel": "Aço", "Fairy": "Fada",
+}
+
+
+def _load_pokedex():
+    """Carrega Pokédex PMP (Gen 1-7) do JSON."""
+    path = Path(__file__).resolve().parent / "static" / "data" / "pokedex.json"
+    if not path.exists():
+        return {}
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+@app.route("/api/pokedex/encounter")
+def api_pokedex_encounter():
+    """Rola encontro(s) de Pokémon. Filtros: nivel, sr_max, sr_min, tipo, qty."""
+    pokedex = _load_pokedex()
+    if not pokedex:
+        return jsonify({"ok": False, "erro": "Pokédex não encontrado"}), 500
+
+    nivel = int(request.args.get("nivel", 5))
+    sr_max = float(request.args.get("sr_max", 10))
+    sr_min = float(request.args.get("sr_min", 0))
+    tipo = request.args.get("tipo", "").strip()
+    qty = min(int(request.args.get("qty", 1)), 6)
+
+    # Lista de Pokémon que passam nos filtros
+    # MIN LVL FD = nível mínimo para encontrar; jogadores de nivel N encontram Pokémon com MIN LVL FD <= N
+    # SR dentro do intervalo
+    # tipo: se informado, Pokémon deve ter esse tipo (PT ou EN)
+    candidatos = []
+    tipo_en = next((k for k, v in TIPO_EN_PT.items() if v == tipo), tipo) if tipo else None
+
+    for nome, dados in pokedex.items():
+        min_lvl = dados.get("MIN LVL FD", 1)
+        sr = dados.get("SR", 0)
+        tipos_poke = dados.get("Type", [])
+
+        if min_lvl > nivel:
+            continue
+        if sr < sr_min or sr > sr_max:
+            continue
+        if tipo_en and tipo_en not in tipos_poke:
+            if tipo not in tipos_poke:  # permite busca por "Fogo" ou "Fire"
+                continue
+
+        entry = {
+            "nome": nome,
+            "index": dados.get("index", 0),
+            "tipo": [TIPO_EN_PT.get(t, t) for t in tipos_poke],
+            "sr": sr,
+            "min_lvl_fd": min_lvl,
+        }
+        if dados.get("AC") is not None:
+            entry["ac"] = dados["AC"]
+        if dados.get("HP") is not None:
+            entry["hp"] = dados["HP"]
+        candidatos.append(entry)
+
+    if not candidatos:
+        return jsonify({"ok": True, "encontros": [], "candidatos": 0, "msg": "Nenhum Pokémon encontrado com esses filtros."})
+
+    listar_todos = request.args.get("list", "0") == "1"
+    if listar_todos:
+        return jsonify({"ok": True, "encontros": candidatos, "candidatos": len(candidatos)})
+    resultado = random.sample(candidatos, min(qty, len(candidatos)))
+    return jsonify({"ok": True, "encontros": resultado, "candidatos": len(candidatos)})
+
+
+@app.route("/api/pokedex")
+def api_pokedex():
+    """Retorna Pokédex completo (para jogadores buscarem Pokémon ao adicionar na equipe)."""
+    pokedex = _load_pokedex()
+    if not pokedex:
+        return jsonify({"ok": False, "pokedex": {}}), 500
+
+    # Converter para formato com tipos em PT + novos campos Monster Manual
+    out = {}
+    for nome, dados in pokedex.items():
+        entry = {
+            "index": dados.get("index", 0),
+            "tipo": [TIPO_EN_PT.get(t, t) for t in dados.get("Type", [])],
+            "sr": dados.get("SR", 0),
+            "min_lvl_fd": dados.get("MIN LVL FD", 1),
+        }
+        if dados.get("AC") is not None:
+            entry["ac"] = dados["AC"]
+        if dados.get("HP") is not None:
+            entry["hp"] = dados["HP"]
+        if dados.get("abilities"):
+            entry["abilities"] = dados["abilities"]
+        if dados.get("ability_hidden"):
+            entry["ability_hidden"] = dados["ability_hidden"]
+        if dados.get("moves_starting"):
+            entry["moves_starting"] = dados["moves_starting"]
+        if dados.get("moves_by_level"):
+            entry["moves_by_level"] = dados["moves_by_level"]
+        if dados.get("moves_tm"):
+            entry["moves_tm"] = dados["moves_tm"]
+        if dados.get("moves_egg"):
+            entry["moves_egg"] = dados["moves_egg"]
+        out[nome] = entry
+    return jsonify({"ok": True, "pokedex": out})
 
 
 if __name__ == "__main__":

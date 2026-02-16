@@ -50,6 +50,12 @@ def _garantir_campos_stats(dados: dict) -> dict:
     if "pokemons" not in dados or not isinstance(dados["pokemons"], list):
         dados["pokemons"] = []
     dados["pokemons"] = _migrar_pokemons(dados["pokemons"])
+    # Migração: origem de jornada - fichas antigas do executável usavam "origem" ou "origemJornada"
+    for chave_antiga in ("origem", "origemJornada"):
+        if chave_antiga in dados and dados[chave_antiga]:
+            if not dados.get("origem_jornada"):
+                dados["origem_jornada"] = dados[chave_antiga]
+            break
     # Migração: classes antigas -> novas (livro Pokémon Mundo Perfeito)
     if dados.get("classe") and dados["classe"] not in CLASSES_TREINADOR:
         mapa_antigo = {"Criador": "Criador de Pokémon", "Ranger": "Patrulheiro", "Combatente": "Treinador Ás",
