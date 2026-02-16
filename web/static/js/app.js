@@ -205,18 +205,27 @@
     const overlay = document.getElementById("roll-overlay");
     const numEl = overlay?.querySelector(".roll-result-num");
     const msgEl = overlay?.querySelector(".roll-result-msg");
+    const spriteEl = overlay?.querySelector(".roll-pokeball-sprite");
     if (!overlay || !numEl) { rollAnimating = false; return; }
     numEl.textContent = "?";
     if (msgEl) msgEl.textContent = "";
-    overlay.classList.remove("roll-overlay-hidden", "reveal", "roll-crit", "roll-fumble");
+    overlay.classList.remove("reveal", "roll-crit", "roll-fumble");
     overlay.classList.toggle("roll-crit", mainNum === 20);
     overlay.classList.toggle("roll-fumble", mainNum === 1);
     overlay.setAttribute("aria-hidden", "false");
+    if (spriteEl) {
+      spriteEl.style.animation = "none";
+      void spriteEl.offsetHeight;
+      spriteEl.style.animation = "";
+    }
+    requestAnimationFrame(() => {
+      overlay.classList.remove("roll-overlay-hidden");
+    });
     const tReveal = setTimeout(() => {
       numEl.textContent = String(mainNum);
       if (msgEl) msgEl.textContent = (msg || "").replace(/^(🎲|🎯|💥|⚡|👑)\s*/, "");
       overlay.classList.add("reveal");
-    }, 1200);
+    }, 1100);
     setTimeout(() => {
       clearTimeout(tReveal);
       overlay.classList.add("roll-overlay-hidden");
@@ -225,7 +234,7 @@
       rollAnimating = false;
       sendRollToMestre(mainNum, msg, tipo);
       try { onComplete && onComplete(); } catch (e) { console.error(e); }
-    }, 4200);
+    }, 3800);
   }
 
   function $(id) {

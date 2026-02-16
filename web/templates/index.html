@@ -402,13 +402,10 @@
 
   <div id="roll-overlay" class="roll-overlay roll-overlay-hidden" aria-hidden="true">
     <div class="roll-pokeball-wrap">
-      <div class="roll-pokeball">
-        <div class="roll-pokeball-top"></div>
-        <div class="roll-pokeball-band"></div>
-        <div class="roll-pokeball-bottom"></div>
-        <div class="roll-pokeball-center">
-          <span class="roll-result-num">?</span>
-        </div>
+      <img class="roll-pokeball-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Cpath d=%22M2 16 A14 14 0 0 1 30 16%22 fill=%22%23e53935%22/%3E%3Cpath d=%22M30 16 A14 14 0 0 1 2 16%22 fill=%22%23f5f5f5%22/%3E%3Crect x=%220%22 y=%2214%22 width=%2232%22 height=%224%22 fill=%22%231a1a1a%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%225%22 fill=%22%23fff%22 stroke=%22%231a1a1a%22 stroke-width=%221.5%22/%3E%3C/svg%3E'" />
+      <div class="roll-pokeball-result">
+        <span class="roll-result-num">?</span>
+        <div class="roll-result-glow"></div>
       </div>
       <p class="roll-result-msg"></p>
     </div>
