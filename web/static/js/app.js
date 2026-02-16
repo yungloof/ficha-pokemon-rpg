@@ -1162,6 +1162,12 @@
         renderPokemons();
         populateConstants();
         atualizar();
+        saveToStorage();
+        fetch("/api/save_local", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...stats, _user_id: getOrCreateUserId() })
+        }).catch(() => {});
         showToast("✅ Ficha importada com sucesso!");
       } catch (err) {
         showToast("❌ " + (err.message || "Erro ao importar"), false);
