@@ -262,6 +262,53 @@
 
   $("npc-add")?.addEventListener("click", addNpc);
 
+  // ========== GUIA DO MESTRE ==========
+  function fmt(s) {
+    return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  }
+
+  async function carregarGuia() {
+    const res = await fetch("/api/mestre/guia", CREDS);
+    const json = await res.json();
+    if (!json.ok || !json.guia) return;
+    const container = $("guia-container");
+    if (!container) return;
+    const ordem = ["encontros", "tamanho", "lendarios", "condicoes", "status_pokemon", "mudancas_status"];
+    container.innerHTML = ordem.map(key => {
+      const sec = json.guia[key];
+      if (!sec) return "";
+      const id = "guia-" + key;
+      let conteudo = sec.conteudo || "";
+      const lin = conteudo.split("\n");
+      const frag = [];
+      let inT = false;
+      let firstRow = true;
+      for (const ln of lin) {
+        if (/^\|.+\|$/.test(ln.trim())) {
+          const cels = ln.split("|").filter(Boolean).map(c => c.trim());
+          if (/^[-:\s]+$/.test(cels.join(""))) continue;
+          if (!inT) { frag.push("<table class='guia-table'>"); inT = true; firstRow = true; }
+          const tag = firstRow ? "th" : "td";
+          const prefix = firstRow ? "<thead><tr>" : "<tr>";
+          const suffix = firstRow ? "</tr></thead><tbody>" : "</tr>";
+          firstRow = false;
+          frag.push(prefix + cels.map(c => `<${tag}>${fmt(c)}</${tag}>`).join("") + suffix);
+        } else {
+          if (inT) { frag.push("</tbody></table>"); inT = false; }
+          if (ln.trim()) frag.push(fmt(ln) + "<br>");
+        }
+      }
+      if (inT) frag.push("</tbody></table>");
+      const html = frag.join("");
+      return `<details class="guia-details" id="${id}">
+        <summary class="guia-summary">${escapeHtml(sec.titulo)}</summary>
+        <div class="guia-content">${html}</div>
+      </details>`;
+    }).join("");
+  }
+
+  carregarGuia();
+
   $("btn-logout")?.addEventListener("click", doLogout);
   } // fim initDashboard
 

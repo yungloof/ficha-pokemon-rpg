@@ -191,3 +191,76 @@
   border-radius: 8px;
   margin-bottom: 6px;
 }
+
+/* Guia do Mestre */
+.mestre-guia .desc {
+  font-size: 0.9rem;
+  color: var(--texto-muted, #8b949e);
+  margin: -4px 0 12px 0;
+}
+
+.guia-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guia-details {
+  background: var(--fundo);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.guia-summary {
+  padding: 12px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.guia-summary::-webkit-details-marker {
+  display: none;
+}
+
+.guia-summary::before {
+  content: "▶";
+  font-size: 0.75rem;
+  transition: transform 0.2s;
+}
+
+.guia-details[open] .guia-summary::before {
+  transform: rotate(90deg);
+}
+
+.guia-content {
+  padding: 0 16px 16px 16px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.guia-content .guia-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+}
+
+.guia-content .guia-table th,
+.guia-content .guia-table td {
+  border: 1px solid var(--borda);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.guia-content .guia-table th {
+  background: var(--card-hover, rgba(255,255,255,0.05));
+  font-weight: 600;
+}
+
+.guia-content strong {
+  color: var(--acento);
+}

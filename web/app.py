@@ -317,6 +317,14 @@ def api_mestre_weather():
     return jsonify({"ok": True, "d100": d100, "clima": clima_nome, "moves": clima_moves})
 
 
+@app.route("/api/mestre/guia")
+@_require_mestre
+def api_mestre_guia():
+    """Retorna o conteúdo do Guia do Mestre para referência rápida."""
+    from guia_mestre import MESTRE_GUIA
+    return jsonify({"ok": True, "guia": MESTRE_GUIA})
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     debug = os.environ.get("FLASK_DEBUG", "1") == "1"
