@@ -1,4 +1,51 @@
 /* Mestre - Dashboard do Narrador */
+.mestre-login-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 24px;
+}
+
+.mestre-login-card {
+  max-width: 360px;
+  width: 100%;
+}
+
+.mestre-login-form label {
+  display: block;
+  margin: 12px 0 4px 0;
+  font-size: 0.9rem;
+}
+
+.mestre-login-form input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 4px;
+  border-radius: 10px;
+  border: 2px solid var(--borda);
+  background: var(--fundo);
+  color: var(--texto);
+  font-size: 1rem;
+}
+
+.mestre-login-form button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 14px;
+}
+
+.login-err {
+  color: var(--danger);
+  font-size: 0.9rem;
+  margin: 10px 0 0 0;
+}
+
+.mestre-user {
+  font-size: 0.9rem;
+  color: var(--acento);
+}
+
 .mestre-app {
   max-width: 900px;
   margin: 0 auto;

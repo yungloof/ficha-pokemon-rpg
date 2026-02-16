@@ -921,6 +921,15 @@
     return null;
   }
 
+  function getOrCreateUserId() {
+    let id = localStorage.getItem("ficha_user_id");
+    if (!id) {
+      id = "u" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem("ficha_user_id", id);
+    }
+    return id;
+  }
+
   function exportFicha() {
     syncStatsFromUI();
     const data = { ...stats };
@@ -1092,8 +1101,9 @@
       });
     }
 
+    const userId = getOrCreateUserId();
     try {
-      const loadRes = await fetch("/api/load_local");
+      const loadRes = await fetch("/api/load_local?user_id=" + encodeURIComponent(userId));
       const loadJson = await loadRes.json();
       if (loadJson.ok && loadJson.dados) {
         stats = { ...getStatsDefault(), ...loadJson.dados };
@@ -1146,10 +1156,11 @@
 
     setInterval(() => {
       syncStatsFromUI();
+      const payload = { ...stats, _user_id: getOrCreateUserId() };
       fetch("/api/save_local", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(stats)
+        body: JSON.stringify(payload)
       }).catch(() => {});
     }, 10000);
 

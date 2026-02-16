@@ -2,15 +2,19 @@
 Ficha RPG Pokémon - Versão Web
 Flask app com suporte total às fichas salvas (import/export compatível).
 Versão Mestre: sessões, rolagens em tempo real, ferramentas de mesa.
+Login do Mestre: credenciais apenas no servidor, senha hasheada, cookies HttpOnly.
 """
+import hashlib
 import json
+from functools import wraps
 import os
 import random
+import secrets
 import string
 from pathlib import Path
 from collections import deque
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, make_response
 
 # Importar do projeto principal para reutilizar lógica
 import sys
@@ -19,6 +23,7 @@ from constants import get_stats_default
 from save_utils import migrar_ficha
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", secrets.token_hex(32))
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 ARQUIVO_SAVE = PROJECT_ROOT / "ficha_save.json"
 
@@ -26,6 +31,45 @@ ARQUIVO_SAVE = PROJECT_ROOT / "ficha_save.json"
 SESSOES = {}
 ROLLS_CACHE = {}
 MAX_ROLLS_PER_SESSION = 100
+
+# Auth Mestre: credenciais SOMENTE no servidor, senha hasheada
+AUTH_SESSIONS = {}  # session_id -> { "user": str }
+AUTH_COOKIE = "ficha_mestre_session"
+
+
+def _hash_password(password):
+    salt = os.environ.get("AUTH_SALT", "ficha_pokemon_rpg_salt_2024")
+    return hashlib.sha256((salt + password).encode("utf-8")).hexdigest()
+
+
+def _check_mestre_credentials(username, password):
+    """Valida credenciais. Usuário e senha NUNCA no frontend."""
+    expected_user = os.environ.get("MESTRE_USER", "Fool")
+    expected_hash = os.environ.get("MESTRE_PASSWORD_HASH")
+    if expected_hash is None:
+        expected_hash = _hash_password(os.environ.get("MESTRE_PASSWORD", "mestre123"))
+    if not username or not password:
+        return False
+    return username.strip() == expected_user and _hash_password(password) == expected_hash
+
+
+def _get_session_from_request():
+    return request.cookies.get(AUTH_COOKIE)
+
+
+def _is_mestre_logged_in():
+    sid = _get_session_from_request()
+    return sid and sid in AUTH_SESSIONS
+
+
+def _require_mestre(f):
+    """Decorator: retorna 401 se não autenticado como mestre."""
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        if not _is_mestre_logged_in():
+            return jsonify({"ok": False, "erro": "Não autenticado"}), 401
+        return f(*args, **kwargs)
+    return wrapped
 
 
 @app.route("/")
@@ -48,16 +92,28 @@ def api_import():
         return jsonify({"ok": False, "erro": str(e)}), 500
 
 
+def _ficha_path(user_id):
+    """Arquivo de ficha por usuário. Sem user_id usa ficha_save.json (retrocompat)."""
+    if user_id and str(user_id).strip():
+        # Sanitizar: só alfanum e hífen
+        safe = "".join(c for c in str(user_id) if c.isalnum() or c in "-_")[:64]
+        if safe:
+            return PROJECT_ROOT / f"ficha_{safe}.json"
+    return ARQUIVO_SAVE
+
+
 @app.route("/api/save_local", methods=["POST"])
 def api_save_local():
-    """Salva no ficha_save.json (quando rodando localmente)."""
+    """Salva ficha no servidor. Cada usuário tem seu próprio arquivo (user_id)."""
     try:
         dados = request.get_json()
         if not isinstance(dados, dict):
             return jsonify({"ok": False, "erro": "Formato inválido"}), 400
+        user_id = dados.get("_user_id", "").strip()
         dados_copy = {k: v for k, v in dados.items() if not str(k).startswith("_")}
         dados_copy["_versao"] = 2
-        with open(ARQUIVO_SAVE, "w", encoding="utf-8") as f:
+        path = _ficha_path(user_id)
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(dados_copy, f, indent=4, ensure_ascii=False)
         return jsonify({"ok": True})
     except Exception as e:
@@ -66,11 +122,13 @@ def api_save_local():
 
 @app.route("/api/load_local")
 def api_load_local():
-    """Carrega ficha_save.json se existir (rodando localmente)."""
-    if not ARQUIVO_SAVE.exists():
+    """Carrega ficha do servidor. Cada usuário tem seu próprio arquivo (?user_id=)."""
+    user_id = request.args.get("user_id", "").strip()
+    path = _ficha_path(user_id)
+    if not path.exists():
         return jsonify({"ok": True, "dados": get_stats_default()})
     try:
-        with open(ARQUIVO_SAVE, "r", encoding="utf-8") as f:
+        with open(path, "r", encoding="utf-8") as f:
             dados = json.load(f)
         migrado = migrar_ficha(dados)
         return jsonify({"ok": True, "dados": migrado})
@@ -118,7 +176,57 @@ def mestre_page():
     return render_template("mestre.html")
 
 
+@app.route("/api/auth/login", methods=["POST"])
+def api_auth_login():
+    """Login do Mestre. Valida no servidor, senha nunca exposta."""
+    try:
+        dados = request.get_json()
+        if not isinstance(dados, dict):
+            return jsonify({"ok": False, "erro": "Dados inválidos"}), 400
+        username = (dados.get("username") or "").strip()
+        password = dados.get("password") or ""
+        if not _check_mestre_credentials(username, password):
+            return jsonify({"ok": False, "erro": "Usuário ou senha inválidos"}), 401
+        sid = secrets.token_urlsafe(32)
+        AUTH_SESSIONS[sid] = {"user": username}
+        resp = make_response(jsonify({"ok": True}))
+        resp.set_cookie(
+            AUTH_COOKIE,
+            sid,
+            httponly=True,
+            samesite="Lax",
+            secure=request.is_secure,
+            max_age=86400 * 7,
+            path="/",
+        )
+        return resp
+    except Exception as e:
+        return jsonify({"ok": False, "erro": "Erro ao autenticar"}), 500
+
+
+@app.route("/api/auth/logout", methods=["POST"])
+def api_auth_logout():
+    """Logout: remove sessão e cookie."""
+    sid = _get_session_from_request()
+    if sid and sid in AUTH_SESSIONS:
+        del AUTH_SESSIONS[sid]
+    resp = make_response(jsonify({"ok": True}))
+    resp.delete_cookie(AUTH_COOKIE, path="/")
+    return resp
+
+
+@app.route("/api/auth/me")
+def api_auth_me():
+    """Verifica se está autenticado. Não retorna senha nem dados sensíveis."""
+    if not _is_mestre_logged_in():
+        return jsonify({"ok": False, "autenticado": False}), 401
+    sid = _get_session_from_request()
+    sess = AUTH_SESSIONS.get(sid, {})
+    return jsonify({"ok": True, "autenticado": True, "user": sess.get("user", "")})
+
+
 @app.route("/api/mestre/session/create", methods=["POST"])
+@_require_mestre
 def api_mestre_session_create():
     """Cria uma nova sessão. Retorna session_id e código."""
     codigo = _gera_codigo()
@@ -155,6 +263,7 @@ def api_mestre_session_roll(codigo):
 
 
 @app.route("/api/mestre/session/<codigo>/rolls")
+@_require_mestre
 def api_mestre_session_rolls(codigo):
     """Mestre busca rolagens da sessão (polling)."""
     codigo = codigo.upper().strip()
@@ -194,6 +303,7 @@ CLIMA_INVERNO = [
 
 
 @app.route("/api/mestre/weather")
+@_require_mestre
 def api_mestre_weather():
     """Rola d100 para clima (primavera/verão ou outono/inverno)."""
     estacao = request.args.get("estacao", "verao")

@@ -11,9 +11,30 @@
 </head>
 <body>
   <div id="app" class="mestre-app">
+    <!-- Tela de Login (visível até autenticar) -->
+    <div id="mestre-login-wrap" class="mestre-login-wrap">
+      <div class="mestre-login-card card">
+        <h2>🎮 Mesa do Mestre</h2>
+        <p class="desc">Entre com suas credenciais para acessar o painel.</p>
+        <form id="mestre-login-form" class="mestre-login-form">
+          <label>Usuário</label>
+          <input type="text" id="login-user" name="username" required autocomplete="username" />
+          <label>Senha</label>
+          <input type="password" id="login-pass" name="password" required autocomplete="current-password" />
+          <p id="login-err" class="login-err hidden"></p>
+          <button type="submit" class="btn-primary">Entrar</button>
+        </form>
+        <a href="/" class="link-player">← Voltar ao Player</a>
+      </div>
+    </div>
+
+    <!-- Dashboard (visível após login) -->
+    <div id="mestre-dashboard" class="mestre-dashboard hidden">
     <header class="header mestre-header">
       <div class="header-top">
         <h1 class="mestre-title">🎮 Mesa do Mestre</h1>
+        <span id="mestre-user" class="mestre-user"></span>
+        <button type="button" id="btn-logout" class="btn-small">Sair</button>
         <a href="/" class="link-player">← Voltar ao Player</a>
       </div>
     </header>
@@ -105,6 +126,7 @@
         <ul id="npc-lista" class="npc-lista"></ul>
       </section>
     </main>
+    </div>
   </div>
 
   <script src="/static/js/mestre.js"></script>

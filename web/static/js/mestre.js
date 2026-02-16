@@ -1,12 +1,14 @@
 /**
  * Mestre - Dashboard do Narrador
  * Rolagens em tempo real, ferramentas de sessão.
+ * Login: credenciais só no servidor, nunca no frontend.
  */
 (function () {
   let sessaoCodigo = null;
   let pollInterval = null;
   let iniciativa = [];
   let npcs = [];
+  const CREDS = { credentials: "include" };
 
   function $(id) {
     return document.getElementById(id);
@@ -17,9 +19,76 @@
     return isNaN(n) ? def : n;
   }
 
-  // ========== SESSÃO ==========
+  function showLogin() {
+    $("mestre-login-wrap")?.classList.remove("hidden");
+    $("mestre-dashboard")?.classList.add("hidden");
+  }
+
+  function showDashboard() {
+    $("mestre-login-wrap")?.classList.add("hidden");
+    $("mestre-dashboard")?.classList.remove("hidden");
+  }
+
+  async function checkAuth() {
+    const res = await fetch("/api/auth/me", CREDS);
+    const json = await res.json();
+    return json.ok && json.autenticado;
+  }
+
+  async function doLogin() {
+    const form = $("mestre-login-form");
+    const userInput = $("login-user");
+    const passInput = $("login-pass");
+    const errEl = $("login-err");
+    if (!form || !userInput || !passInput) return false;
+    errEl.classList.add("hidden");
+    errEl.textContent = "";
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: userInput.value.trim(),
+        password: passInput.value,
+      }),
+      credentials: "include",
+    });
+    const json = await res.json();
+    if (json.ok) {
+      passInput.value = "";
+      return true;
+    }
+    errEl.textContent = json.erro || "Erro ao entrar";
+    errEl.classList.remove("hidden");
+    return false;
+  }
+
+  async function doLogout() {
+    await fetch("/api/auth/logout", { method: "POST", ...CREDS });
+    showLogin();
+  }
+
+  async function initAuth() {
+    const autenticado = await checkAuth();
+    if (autenticado) {
+      const meRes = await fetch("/api/auth/me", CREDS);
+      const me = await meRes.json();
+      $("mestre-user").textContent = me.user ? me.user : "";
+      showDashboard();
+      initDashboard();
+      return;
+    }
+    showLogin();
+    $("mestre-login-form")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (await doLogin()) {
+        initAuth();
+      }
+    });
+  }
+
+  function initDashboard() {
   async function criarSessao() {
-    const res = await fetch("/api/mestre/session/create", { method: "POST" });
+    const res = await fetch("/api/mestre/session/create", { method: "POST", ...CREDS });
     const json = await res.json();
     if (!json.ok) return;
     sessaoCodigo = json.codigo;
@@ -45,7 +114,7 @@
   async function buscarRolls() {
     if (!sessaoCodigo) return;
     const total = $("rolls-list").dataset.total || 0;
-    const res = await fetch(`/api/mestre/session/${sessaoCodigo}/rolls?desde=${total}`);
+    const res = await fetch(`/api/mestre/session/${sessaoCodigo}/rolls?desde=${total}`, CREDS);
     const json = await res.json();
     if (!json.ok || !json.rolls || json.rolls.length === 0) return;
     const ul = $("rolls-list");
@@ -94,7 +163,7 @@
   // ========== CLIMA ==========
   async function rolarClima() {
     const estacao = $("clima-estacao")?.value || "verao";
-    const res = await fetch(`/api/mestre/weather?estacao=${estacao}`);
+    const res = await fetch(`/api/mestre/weather?estacao=${estacao}`, CREDS);
     const json = await res.json();
     if (!json.ok) return;
     const el = $("clima-result");
@@ -192,4 +261,9 @@
   }
 
   $("npc-add")?.addEventListener("click", addNpc);
+
+  $("btn-logout")?.addEventListener("click", doLogout);
+  } // fim initDashboard
+
+  initAuth();
 })();
